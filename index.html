@@ -367,6 +367,11 @@ body {
 }
 }
 	   
+	   #content-stack {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    gap: 0 !important;
+	   
 </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -442,7 +447,7 @@ body {
     <!-- TÍTULO CENTRAL COMPACTO -->
     <div style="flex: 1; text-align: center; margin: 0 8px; min-width: 0;">
         <h1 style="font-size: 12px; font-weight: 600; line-height: 1.2; margin: 0; overflow: hidden; text-overflow: ellipsis;">Conferir NFe</h1>
-        <p style="font-size: 10px; opacity: 0.9; margin: 0; overflow: hidden; text-overflow: ellipsis;">Sistema de conferência e gestão de notas fiscais</p>
+        <p style="font-size: 10px; opacity: 0.9; margin: 0; overflow: hidden; text-overflow: ellipsis;">Sistema de conferencia e gestão de notas fiscais</p>
     </div>
     
     <!-- BOTÃO SAIR COMPACTO -->
@@ -462,7 +467,7 @@ body {
             <!-- TÍTULO CENTRAL -->
             <div class="flex-1 text-center">
                 <h1 class="text-2xl font-semibold mb-1">Conferir NFe</h1>
-                <p class="text-sm opacity-90 max-w-md mx-auto">Sistema de conferência e gestão de notas fiscais</p>
+                <p class="text-sm opacity-90 max-w-md mx-auto">Sistema de conferencia e gestão de notas fiscais</p>
             </div>
             
             <!-- BOTÃO SAIR ESTILIZADO -->
@@ -480,7 +485,7 @@ body {
                 <nav class="flex border-b border-gray-200 print-hidden">
                     <button data-tab="NOTA FISCAL" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-150">NOTA FISCAL</button>
                     <button data-tab="CONTAGEM LOJA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONTAGEM LOJA</button>
-                    <button data-tab="CONFERÊNCIA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONFERÊNCIA</button>
+                    <button data-tab="CONFERENCIA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONFERENCIA</button>
                 </nav>
 
 
@@ -1087,7 +1092,7 @@ body {
             } else if (sheetName === "CONTAGEM LOJA") {
                 contentStack.innerHTML = renderContagemLojaLayout();
                 currentContador = 'CONTAGEM LOJA';
-            } else if (sheetName === "CONFERÊNCIA") {
+            } else if (sheetName === "CONFERENCIA") {
                 contentStack.innerHTML = renderConferenciaLayout();
             }
             
@@ -1175,7 +1180,7 @@ body {
             <div class="flex flex-wrap gap-3 pb-4 mb-4 border-b border-gray-200 print-hidden">
                 <button onclick="printConferencia()" class="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow-sm hover:bg-blue-200 transition duration-150 text-sm font-medium border border-blue-300">
                     <span class="text-blue-600">${printerIcon}</span>
-                    <span>Imprimir Conferência</span>
+                    <span>Imprimir Conferencia</span>
                 </button>
                 
                 <!-- ✅ NOVO BOTÃO EXPORTAR EXCEL -->
@@ -1272,7 +1277,7 @@ body {
 
 
         /**
-         * Renderiza os dados do Sheets em uma tabela HTML (usado para NF e Conferência).
+         * Renderiza os dados do Sheets em uma tabela HTML (usado para NF e Conferencia).
          */
         function renderTable(sheetName, data, headers) {
             
@@ -1492,7 +1497,7 @@ function renderNotasFiscaisInfo(notasFiscaisInfo) {
     let html = `<div class="mb-4">`;
     
     // Mostra quantas notas fiscais tem - MESMA FONTE DA TABELA
-    html += `<div class="text-sm text-gray-600 mb-2 font-sans">Notas Fiscais na Conferência: ${notasFiscaisInfo.length}</div>`;
+    html += `<div class="text-sm text-gray-600 mb-2 font-sans">Notas Fiscais na Conferencia: ${notasFiscaisInfo.length}</div>`;
     
     // Mostra cada nota fiscal - MESMA FONTE DA TABELA
     notasFiscaisInfo.forEach((info, index) => {
