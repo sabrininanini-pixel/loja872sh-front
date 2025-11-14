@@ -1,249 +1,336 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+	
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conferir Nota Fiscal</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+
+
+
+	
+    <!-- ✅ CACHE BUSTING - FORÇA ATUALIZAÇÃO -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+   <style>
+    /* ✅ NOVO ESTILO BASE - MODERNO */
+    :root {
+        --primary: #6388f1;
+        --primary-dark: #4f46e5;
+        --secondary: #6c757d;
+        --success: #10b981;
+        --light: #f8f9fa;
+        --dark: #374151;
+        --border: #e5e7eb;
+        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        --font-main: 'Poppins', sans-serif;
+        --bg-color: #f8fafc;
+    }
+    
+    body {
+        font-family: var(--font-main) !important;
+        background-color: var(--bg-color);
+        color: var(--dark);
+        line-height: 1.6;
+    }
+
+    .mock-table th, .mock-table td {
+        padding: 14px 16px !important;
+        text-align: left;
+        border-bottom: 1px solid var(--border); 
+        border-right: 1px solid var(--border); 
+        font-family: var(--font-main) !important;
+    }
+    
+    .mock-table th:last-child, .mock-table td:last-child {
+        border-right: none;
+    }
+
+    .mock-table th {
+        font-weight: 600 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--dark) !important;
+        background-color: var(--light) !important;
+    }
+    
+	   .mock-table tr:hover:not(#contagem-table tr) {
+    background-color: #f8f9fa !important;
+}
+
+    /* ✅ NOVO HEADER COM GRADIENTE E PADRÃO */
+    header.print-hidden {
+        background: 
+            repeating-linear-gradient(0deg, rgba(255,255,255,0.1), rgba(255,255,255,0.1) 2px, transparent 2px, transparent 4px),
+            linear-gradient(135deg, #0f172a, #1e1b4b) !important;
+        color: white;
+        margin: 0;
+        padding: 16px 0;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        position: relative;
+        overflow: hidden;
+        font-family: var(--font-main) !important;
+    }
+
+    /* 🔥 MANTENHA O RESTO DO SEU CSS ATUAL AQUI (modo scroll, impressão, etc) */
+    /* ---------------------------------------------------------------- */
+    /* --- Estilos de Edição/Conferência --- */
+    /* ---------------------------------------------------------------- */
+    
+    /* Estilos base para a coluna Diferença (5ª coluna visível) */
+    #conferencia-content tr td:nth-child(5) { 
+        font-weight: bold;
+        text-align: center; 
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* --- LARGURAS FIXAS GERAIS (DEFAULT TRUNCADO) --- */
+    /* --- Esta regra é "desligada" pela classe .expand-mode-cell --- */
+    /* ---------------------------------------------------------------- */
+    
+    /* Coluna 1 (Código de Barras - 210px) da Conferência */
+    #conferencia-table th:nth-child(1),
+    #conferencia-table td:nth-child(1) {
+         width: 210px; 
+         min-width: 210px;
+         max-width: 210px;
+         overflow: hidden; 
+         text-overflow: ellipsis;
+         white-space: nowrap;
+    }
+    
+    /* Colunas numéricas/estreitas (70px) da Conferência */
+    #conferencia-table th:nth-child(3), 
+    #conferencia-table td:nth-child(3),
+    #conferencia-table th:nth-child(4), 
+    #conferencia-table td:nth-child(4),
+    #conferencia-table th:nth-child(5), 
+    #conferencia-table td:nth-child(5),
+    #conferencia-table th:nth-child(6), 
+    #conferencia-table td:nth-child(6) {
+         width: 70px; 
+         min-width: 70px;
+         max-width: 70px;
+         overflow: hidden; 
+         text-overflow: ellipsis;
+         white-space: nowrap;
+    }
+    
+    /* Colunas numéricas/estreitas (70px) da Nota Fiscal */
+    #notafiscal-table th:nth-child(2),
+    #notafiscal-table td:nth-child(2),
+    #notafiscal-table th:nth-child(4),
+    #notafiscal-table td:nth-child(4) {
+         width: 70px; 
+         min-width: 70px;
+         max-width: 70px;
+         overflow: hidden; 
+         text-overflow: ellipsis;
+         white-space: nowrap;
+         text-align: center; 
+    }
+
+    /* Coluna Código de Barras (300px) da Contagem Loja */
+    #contagem-table th:nth-child(1),
+    #contagem-table td:nth-child(1) {
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 300px !important;
+        overflow: hidden; 
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    /* Coluna Descrição da Contagem Loja - CORRIGIDA: REMOVIDO PADDING E ALINHAMENTO À ESQUERDA */
+    #contagem-table th:nth-child(2),
+    #contagem-table td:nth-child(2) {
+        padding-left: 0 !important;
+        width: auto;
+        text-align: left !important;
+    }
+
+    /* Centraliza os valores numéricos da CONFERENCIA */
+    #conferencia-table td:nth-child(3), 
+    #conferencia-table td:nth-child(4),
+    #conferencia-table td:nth-child(5) {
+         text-align: center; 
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* --- ESTILOS DE MODO (TOGGLE POR JS) --- */
+    /* ---------------------------------------------------------------- */
+
+    /* Estilo base para MODO EXPANDIDO */
+    .expand-mode-cell {
+        max-width: none !important;
+        min-width: 0 !important;
+        overflow-x: visible !important;
+        white-space: normal !important;
+    }
+
+    /* Classe para MODO SCROLL (COLUNAS DE DESCRIÇÃO E TEXTO LONGO - 150px) */
+    .scroll-mode-cell {
+        max-width: 150px !important; 
+        min-width: 150px !important;
+        overflow-x: auto !important; 
+        white-space: nowrap !important; 
+        text-overflow: clip !important;
+    }
+    
+    /* Classe para MODO SCROLL (COLUNAS NUMÉRICAS OU ESTREITAS - 70px) */
+    .scroll-mode-cell-numeric {
+        width: 70px !important; 
+        min-width: 70px !important;
+        max-width: 70px !important;
+        overflow-x: auto !important; 
+        white-space: nowrap !important;
+        text-overflow: clip !important;
+        text-align: left !important;
+    }
+    
+    /* Classe para Código de Barras (210px) */
+    .scroll-mode-cell-code {
+        width: 210px !important; 
+        min-width: 210px !important;
+        max-width: 210px !important;
+        overflow-x: auto !important; 
+        white-space: nowrap !important;
+        text-overflow: clip !important;
+        text-align: left !important;
+    }
+
+    /* Classes usadas pelo JavaScript para aplicar as cores */
+    .bg-fee2e2 { background-color: #fee2e2; }
+    .text-b91c1c { color: #b91c1c; }
+    .bg-green-100 { background-color: #d1fae5; }
+    .text-green-700 { color: #047857; }
+
+    /* Estilo para linhas com código mas sem descrição na Contagem Loja */
+    .bg-red-50 {
+        background-color: #fecaca !important;
+    }
+
+    .bg-red-50:hover {
+        background-color: #fecaca !important;
+    }
+
+    /* Estilo para células editáveis */
+    [contenteditable="true"]:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px #c7d2fe; 
+    }
+    
+    /* ---------------------------------------------------------------- */
+    /* --- Estilos de Impressão (A4) --- */
+    /* ---------------------------------------------------------------- */
+    @media print {
+        body {
+            margin: 0;
+            padding: 0;
+            width: 210mm; 
+            min-height: 297mm;
+        }
+
+        .container, .bg-white, .shadow-lg {
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            border: none !important;
+        }
+        header, nav, #paste-modal, #notifications-container, .print-hidden {
+            display: none !important;
+        }
+
+        .mock-table {
+            width: 100%;
+            font-size: 10pt;
+        }
         .mock-table th, .mock-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb; 
-            border-right: 1px solid #e5e7eb; 
+            padding: 4px; 
+            border-bottom: 1px solid #ccc;
+            border-right: 1px solid #ccc;
         }
         
-        /* Regra para remover a linha vertical da última coluna */
-        .mock-table th:last-child, .mock-table td:last-child {
-            border-right: none;
-        }
-
-        .mock-table th {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #4b5563; /* gray-600 */
-        }
-        .mock-table tr:hover {
-            background-color: #f9fafb; /* gray-50 */
-        }
-
-        /* ---------------------------------------------------------------- */
-        /* --- Estilos de Edição/Conferência --- */
-        /* ---------------------------------------------------------------- */
-        
-        /* Estilos base para a coluna Diferença (5ª coluna visível) */
-        #conferencia-content tr td:nth-child(5) { 
-            font-weight: bold;
-            text-align: center; 
-        }
-
-        /* ---------------------------------------------------------------- */
-        /* --- LARGURAS FIXAS GERAIS (DEFAULT TRUNCADO) --- */
-        /* --- Esta regra é "desligada" pela classe .expand-mode-cell --- */
-        /* ---------------------------------------------------------------- */
-        
-        /* Coluna 1 (Código de Barras - 210px) da Conferência */
-        #conferencia-table th:nth-child(1),
-        #conferencia-table td:nth-child(1) {
-             width: 210px; 
-             min-width: 210px;
-             max-width: 210px;
-             overflow: hidden; 
-             text-overflow: ellipsis;
-             white-space: nowrap;
-        }
-        
-        /* Colunas numéricas/estreitas (70px) da Conferência */
-        #conferencia-table th:nth-child(3), 
-        #conferencia-table td:nth-child(3),
-        #conferencia-table th:nth-child(4), 
-        #conferencia-table td:nth-child(4),
-        #conferencia-table th:nth-child(5), 
-        #conferencia-table td:nth-child(5),
-        #conferencia-table th:nth-child(6), 
-        #conferencia-table td:nth-child(6) {
-             width: 70px; 
-             min-width: 70px;
-             max-width: 70px;
-             overflow: hidden; 
-             text-overflow: ellipsis;
-             white-space: nowrap;
-        }
-        
-        /* Colunas numéricas/estreitas (70px) da Nota Fiscal */
-        #notafiscal-table th:nth-child(2),
-        #notafiscal-table td:nth-child(2),
-        #notafiscal-table th:nth-child(4),
-        #notafiscal-table td:nth-child(4) {
-             width: 70px; 
-             min-width: 70px;
-             max-width: 70px;
-             overflow: hidden; 
-             text-overflow: ellipsis;
-             white-space: nowrap;
-             text-align: center; 
-        }
-
-        /* Coluna Código de Barras (300px) da Contagem Loja */
-        #contagem-table th:nth-child(1),
-        #contagem-table td:nth-child(1) {
-            width: 300px !important;
-            min-width: 300px !important;
-            max-width: 300px !important;
-            overflow: hidden; 
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            text-align: left;
-        }
-
-        /* Coluna Descrição da Contagem Loja - CORRIGIDA: REMOVIDO PADDING E ALINHAMENTO À ESQUERDA */
-        #contagem-table th:nth-child(2),
-        #contagem-table td:nth-child(2) {
-            padding-left: 0 !important; /* REMOVIDO PADDING FIXO */
-            width: auto;
-            text-align: left !important;
-        }
-
-        /* Centraliza os valores numéricos da CONFERENCIA */
-        #conferencia-table td:nth-child(3), 
-        #conferencia-table td:nth-child(4),
-        #conferencia-table td:nth-child(5) {
-             text-align: center; 
-        }
-
-        /* ---------------------------------------------------------------- */
-        /* --- ESTILOS DE MODO (TOGGLE POR JS) --- */
-        /* ---------------------------------------------------------------- */
-
-        /* Estilo base para MODO EXPANDIDO (Permite que a célula se ajuste ao conteúdo - Padrão) */
-        .expand-mode-cell {
+        .scroll-mode-cell, .scroll-mode-cell-numeric, .expand-mode-cell, .scroll-mode-cell-code {
             max-width: none !important;
             min-width: 0 !important;
             overflow-x: visible !important;
             white-space: normal !important;
         }
-
-        /* Classe para MODO SCROLL (COLUNAS DE DESCRIÇÃO E TEXTO LONGO - 150px) */
-        .scroll-mode-cell {
-            max-width: 150px !important; 
-            min-width: 150px !important;
-            overflow-x: auto !important; 
-            white-space: nowrap !important; 
-            text-overflow: clip !important;
+    }
+    
+    /* ---------------------------------------------------------------- */
+    /* --- Ajuste de Notificação para Mobile (Compactação) --- */
+    /* ---------------------------------------------------------------- */
+    @media (max-width: 640px) {
+        #notifications-container > div {
+            padding: 0.5rem !important; 
+            gap: 0.5rem !important; 
+            max-width: 80vw;
         }
         
-        /* Classe para MODO SCROLL (COLUNAS NUMÉRICAS OU ESTREITAS - 70px) */
-        .scroll-mode-cell-numeric {
-            width: 70px !important; 
-            min-width: 70px !important;
-            max-width: 70px !important;
-            overflow-x: auto !important; 
-            white-space: nowrap !important;
-            text-overflow: clip !important;
-            text-align: left !important;
+        #notifications-container > div p {
+            font-size: 0.875rem !important;
         }
         
-        /* Classe para Código de Barras (210px) */
-        .scroll-mode-cell-code {
-            width: 210px !important; 
-            min-width: 210px !important;
-            max-width: 210px !important;
-            overflow-x: auto !important; 
-            white-space: nowrap !important;
-            text-overflow: clip !important;
-            text-align: left !important;
+        #notifications-container > div svg {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
         }
+    }
 
-        /* Classes usadas pelo JavaScript para aplicar as cores */
-        .bg-fee2e2 { background-color: #fee2e2; } /* Vermelho suave (red-100) */
-        .text-b91c1c { color: #b91c1c; } /* Vermelho escuro (red-700) */
-        .bg-green-100 { background-color: #d1fae5; } /* Verde suave */
-        .text-green-700 { color: #047857; } /* Verde escuro */
-
-        /* Estilo para linhas com código mas sem descrição na Contagem Loja - CORRIGIDO */
-        .bg-red-50 {
-            background-color: #fecaca !important;
-        }
-
-        .bg-red-50:hover {
-            background-color: #fecaca !important; /* Vermelho mais escuro no hover */
-        }
-
-        /* Estilo para células editáveis (Contagem Loja / OBS) */
-        [contenteditable="true"]:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px #c7d2fe; 
+    /* RESPONSIVO */
+    @media (max-width: 768px) {
+        header .flex {
+            flex-direction: column;
+            gap: 15px;
         }
         
-        /* ---------------------------------------------------------------- */
-        /* --- Estilos de Impressão (A4) --- */
-        /* ---------------------------------------------------------------- */
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-                width: 210mm; 
-                min-height: 297mm;
-            }
-
-            .container, .bg-white, .shadow-lg {
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                max-width: none !important;
-                border: none !important;
-            }
-            header, nav, #paste-modal, #notifications-container, .print-hidden {
-                display: none !important;
-            }
-
-            .mock-table {
-                width: 100%;
-                font-size: 10pt;
-            }
-            .mock-table th, .mock-table td {
-                padding: 4px; 
-                border-bottom: 1px solid #ccc;
-                border-right: 1px solid #ccc;
-            }
-            
-            /* Força todas as colunas a expandir na impressão */
-            .scroll-mode-cell, .scroll-mode-cell-numeric, .expand-mode-cell, .scroll-mode-cell-code {
-                max-width: none !important;
-                min-width: 0 !important;
-                overflow-x: visible !important;
-                white-space: normal !important;
-            }
+        .nf-info {
+            flex-direction: column;
+            gap: 15px;
         }
         
-        /* ---------------------------------------------------------------- */
-        /* --- Ajuste de Notificação para Mobile (Compactação) --- */
-        /* ---------------------------------------------------------------- */
-        /* Aplica em telas pequenas (max-width de 640px) para reduzir o tamanho da notificação */
-        @media (max-width: 640px) {
-            /* Alvo: O div de notificação */
-            #notifications-container > div {
-                /* Reduz o padding (p-4 -> p-2) */
-                padding: 0.5rem !important; 
-                /* Reduz o espaçamento entre ícone e texto (space-x-3 -> space-x-2) */
-                gap: 0.5rem !important; 
-                /* Limita a largura para garantir que não ocupe demais */
-                max-width: 80vw;
-            }
-            /* Alvo: O parágrafo de texto */
-            #notifications-container > div p {
-                font-size: 0.875rem !important; /* text-sm (14px) */
-            }
-            /* Alvo: O SVG do ícone */
-            #notifications-container > div svg {
-                width: 1.25rem !important; /* h-5 (20px) */
-                height: 1.25rem !important;
-            }
+        /* ✅ HEADER MOBILE COM NOVO ESTILO */
+        header.print-hidden {
+            padding: 10px 0 !important;
         }
+    }
 
-    </style>
+
+/* 🔥 CORREÇÃO DEFINITIVA PARA HEADER MOBILE/DESKTOP */
+.header-mobile {
+    display: none;
+}
+
+.header-desktop {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .header-mobile {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .header-desktop {
+        display: flex !important;
+    }
+}
+
+	 
+	   
+</style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
@@ -298,23 +385,58 @@
                 >
                     Entrar
                 </button>
+                
             </div>
         </div>
     </div>
 
     <!-- SISTEMA PRINCIPAL (inicialmente oculto) -->
     <div id="main-system" class="hidden">
-        <div class="container mx-auto px-0 py-4 md:p-8">
-            <header class="mb-6 print-hidden">
-                <div class="flex justify-between items-center">
-                    <h1 class="text-3xl font-extrabold text-gray-900 md:px-0 px-4">
-                        Conferir Nota Fiscal
-                    </h1>
-                    <button onclick="logout()" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300">
-                        <span>Sair</span>
-                    </button>
-                </div>
-            </header>
+        <div class="mx-auto px-0 py-0 md:px-8">
+            <header class="print-hidden" style="background: linear-gradient(135deg, #1e3a8a, #3730a3); color: white; margin: 0; padding: 16px 0; width: 100vw; margin-left: calc(-50vw + 50%);">
+    <div class="w-full">
+       <!-- MOBILE LAYOUT - COM DISPLAY CONDICIONAL -->
+<div class="header-mobile" style="align-items: center; justify-content: space-between; padding: 8px 12px; font-family: 'Poppins', sans-serif;">
+    <!-- LOGO À ESQUERDA -->
+    <a href="https://www.gtgo.com.br" style="text-decoration: none; color: inherit; flex-shrink: 0;">
+        <div style="font-size: 14px; font-weight: bold; white-space: nowrap;">GTGO</div>
+    </a>
+    
+    <!-- TÍTULO CENTRAL COMPACTO -->
+    <div style="flex: 1; text-align: center; margin: 0 8px; min-width: 0;">
+        <h1 style="font-size: 12px; font-weight: 600; line-height: 1.2; margin: 0; overflow: hidden; text-overflow: ellipsis;">Conferir NFe</h1>
+        <p style="font-size: 10px; opacity: 0.9; margin: 0; overflow: hidden; text-overflow: ellipsis;">Sistema de conferência e gestão de notas fiscais</p>
+    </div>
+    
+    <!-- BOTÃO SAIR COMPACTO -->
+    <button onclick="logout()" style="flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-radius: 6px; font-size: 11px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.2); color: white; white-space: nowrap;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Sair</span>
+    </button>
+</div>
+        <!-- DESKTOP LAYOUT -->
+      <div class="header-desktop justify-between items-center max-w-7xl mx-auto px-4">
+            <!-- LOGO GTGO COM LINK -->
+            <a href="https://www.gtgo.com.br" class="flex flex-col items-center text-center" style="text-decoration: none; color: inherit;">
+                <div class="text-xl font-bold">GTGO</div>
+                <div class="text-xs opacity-90 mt-1">Gestão Avançada</div>
+            </a>
+            
+            <!-- TÍTULO CENTRAL -->
+            <div class="flex-1 text-center">
+                <h1 class="text-2xl font-semibold mb-1">Conferir NFe</h1>
+                <p class="text-sm opacity-90 max-w-md mx-auto">Sistema de conferência e gestão de notas fiscais</p>
+            </div>
+            
+            <!-- BOTÃO SAIR ESTILIZADO -->
+            <button onclick="logout()" class="flex items-center space-x-2 px-4 py-2 rounded-lg transition duration-150 text-sm font-medium border"
+                    style="background: rgba(255, 255, 255, 0.2); color: white; border-color: rgba(255, 255, 255, 0.3);">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Sair</span>
+            </button>
+        </div>
+    </div>
+</header>
 
             <div class="bg-white rounded-xl shadow-lg border border-gray-100 px-0 pt-6 pb-6 md:p-6">
 
@@ -354,10 +476,128 @@
         const USER_ID = "web-user-123";
         
         // =========================================================================
-        // SISTEMA DE AUTENTICAÇÃO
+        // SISTEMA DE AUTENTICAÇÃO CORRIGIDO
         // =========================================================================
 
         let currentUser = null;
+
+        /**
+         * ✅ SISTEMA DE LEMBRAR LOGIN - VERSÃO FORTE
+         */
+        function setupLoginRemember() {
+            console.log("🔧 Iniciando sistema de lembrar login...");
+            
+            const isAndroidApp = typeof Android !== 'undefined';
+            console.log("📱 Ambiente:", isAndroidApp ? "Android APK" : "Navegador");
+            
+            let savedLogin = null;
+            let source = '';
+            
+            // PRIMEIRO: Tenta do Android
+            if (isAndroidApp) {
+                try {
+                    console.log("📱 Tentando carregar do Android...");
+                    const androidData = Android.carregarLogin();
+                    console.log("📱 Resposta do Android:", androidData);
+                    
+                    if (androidData && androidData !== "{}" && androidData !== "null" && androidData !== "") {
+                        savedLogin = JSON.parse(androidData);
+                        source = 'Android';
+                        console.log('✅ Credenciais carregadas do Android');
+                    }
+                } catch (error) {
+                    console.log('❌ Falha no Android, tentando fallback...', error);
+                }
+            }
+            
+            // SEGUNDO: Fallback para localStorage
+            if (!savedLogin) {
+                try {
+                    const localData = localStorage.getItem('nfe_login_credentials');
+                    if (localData) {
+                        savedLogin = JSON.parse(localData);
+                        source = 'LocalStorage';
+                        console.log('✅ Credenciais carregadas do localStorage');
+                    }
+                } catch (error) {
+                    console.log('❌ Erro no localStorage:', error);
+                }
+            }
+            
+            // TERCEIRO: Se encontrou credenciais, preenche os campos
+            if (savedLogin && savedLogin.username && savedLogin.password) {
+                document.getElementById('username').value = savedLogin.username;
+                document.getElementById('password').value = savedLogin.password;
+                console.log(`✅ Campos preenchidos (Fonte: ${source})`);
+                
+            
+                
+            }
+        }
+
+        /**
+         * ✅ SALVAR CREDENCIAIS - VERSÃO ROBUSTA
+         */
+        function saveLoginCredentials(username, password) {
+            const loginData = {
+                username: username,
+                password: password,
+                timestamp: Date.now(),
+                source: 'login_success'
+            };
+            
+            console.log("💾 Salvando credenciais para:", username);
+            
+            const isAndroidApp = typeof Android !== 'undefined';
+            
+            // Salva no Android
+            if (isAndroidApp) {
+                try {
+                    Android.salvarLogin(JSON.stringify(loginData));
+                    console.log('✅ Salvo no Android');
+                } catch (error) {
+                    console.log('❌ Erro ao salvar no Android:', error);
+                }
+            }
+            
+            // Salva no localStorage (sempre)
+            try {
+                localStorage.setItem('nfe_login_credentials', JSON.stringify(loginData));
+                console.log('✅ Salvo no localStorage');
+            } catch (error) {
+                console.log('❌ Erro ao salvar no localStorage:', error);
+            }
+            
+        }
+
+        /**
+         * ✅ LIMPAR CREDENCIAIS SALVAS (APENAS QUANDO EXPLICITAMENTE SOLICITADO)
+         */
+        function clearLoginCredentials() {
+            const isAndroidApp = typeof Android !== 'undefined';
+            
+            if (isAndroidApp) {
+                try {
+                    Android.salvarLogin("", "");
+                    console.log('✅ Credenciais limpas no Android');
+                } catch (error) {
+                    console.log('❌ Erro ao limpar credenciais no Android:', error);
+                }
+            }
+            
+            try {
+                localStorage.removeItem('nfe_login_credentials');
+                console.log('✅ Credenciais limpas no navegador');
+            } catch (error) {
+                console.log('❌ Erro ao limpar credenciais no navegador:', error);
+            }
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            
+            showNotification('Credenciais removidas com sucesso', 'info');
+        }
+
 
         /**
          * Realiza o login
@@ -394,6 +634,10 @@
                     currentUser = result.user;
                     showMainSystem();
                     showNotification(`Bem-vindo, ${username}!`, 'success');
+                    
+                    // ✅ SALVA AS CREDENCIAIS APÓS LOGIN BEM-SUCEDIDO
+                    saveLoginCredentials(username, password);
+                    
                 } else {
                     showNotification(result.message || 'Erro ao fazer login', 'error');
                 }
@@ -438,7 +682,7 @@
         }
 
         /**
-         * Realiza logout
+         * ✅ LOGOUT CORRIGIDO - NÃO LIMPA CREDENCIAIS SALVAS
          */
         async function logout() {
             try {
@@ -449,11 +693,20 @@
             } catch (error) {
                 console.error('Erro no logout:', error);
             } finally {
+                // ✅ MANTÉM AS CREDENCIAIS SALVAS - NÃO LIMPA!
                 currentUser = null;
                 document.getElementById('main-system').classList.add('hidden');
                 document.getElementById('login-screen').classList.remove('hidden');
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '';
+                
+                // ✅ NÃO LIMPA OS CAMPOS - DEIXA AS CREDENCIAIS SALVAS VISÍVEIS
+                // Os campos JÁ devem estar preenchidos pelo setupLoginRemember()
+                
+                showNotification('Logout realizado. Use o botão "Entrar" para acessar novamente.', 'success', 3000);
+                
+                // ✅ FORÇA RECARREGAMENTO DAS CREDENCIAIS (para garantir)
+                setTimeout(() => {
+                    setupLoginRemember();
+                }, 500);
             }
         }
 
@@ -523,21 +776,32 @@
         };
 
         /**
-         * Inicialização do sistema de autenticação
+         * ✅ INICIALIZAÇÃO CORRIGIDA
          */
         async function initializeApp() {
+            console.log("🚀 INICIALIZANDO APLICATIVO...");
+            
             try {
+                // ✅ CONFIGURA LEMBRAR LOGIN
+                setTimeout(() => {
+                    setupLoginRemember();
+                }, 800);
+                
+                // ✅ VERIFICA AUTENTICAÇÃO EXISTENTE
                 const isAuthenticated = await checkAuth();
                 
                 if (isAuthenticated) {
+                    console.log("✅ Usuário já autenticado, mostrando sistema...");
                     showMainSystem();
                     showNotification(`Bem-vindo de volta, ${currentUser}!`, 'success');
                 } else {
+                    console.log("🔐 Usuário não autenticado, mostrando tela de login");
                     document.getElementById('login-screen').classList.remove('hidden');
                     document.getElementById('main-system').classList.add('hidden');
                 }
+                
             } catch (error) {
-                console.error('Erro na inicialização:', error);
+                console.error('💥 Erro crítico na inicialização:', error);
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-system').classList.add('hidden');
             }
@@ -836,23 +1100,33 @@
          * Retorna o HTML completo da aba CONFERENCIA (com botão de impressão e modo scroll).
          */
         function renderConferenciaLayout() {
-            return `
-                <div id="conferencia-content">
-                    <div class="flex flex-wrap gap-3 pb-4 mb-4 border-b border-gray-200 print-hidden">
-                        <button onclick="printConferencia()" class="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow-sm hover:bg-blue-200 transition duration-150 text-sm font-medium border border-blue-300">
-                            <span class="text-blue-600">${printerIcon}</span>
-                            <span>Imprimir Conferência</span>
-                        </button>
-                        <button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
-                            <span>Modo Scroll</span>
-                        </button>
-                    </div>
-                    <div id="dynamic-table-content-conferencia">
-                        <p class="text-center text-gray-400 py-10">Carregando dados...</p>
-                    </div>
-                </div>
-            `;
-        }
+    return `
+        <div id="conferencia-content">
+            <div class="flex flex-wrap gap-3 pb-4 mb-4 border-b border-gray-200 print-hidden">
+                <button onclick="printConferencia()" class="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow-sm hover:bg-blue-200 transition duration-150 text-sm font-medium border border-blue-300">
+                    <span class="text-blue-600">${printerIcon}</span>
+                    <span>Imprimir Conferência</span>
+                </button>
+                
+                <!-- ✅ NOVO BOTÃO EXPORTAR EXCEL -->
+                <button onclick="exportarParaExcel()" class="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg shadow-sm hover:bg-green-200 transition duration-150 text-sm font-medium border border-green-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Exportar para Excel</span>
+                </button>
+                
+                
+                <button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
+                    <span>Modo Scroll</span>
+                </button>
+            </div>
+            <div id="dynamic-table-content-conferencia">
+                <p class="text-center text-gray-400 py-10">Carregando dados...</p>
+            </div>
+        </div>
+    `;
+}
 
         /**
          * Abre a caixa de diálogo de impressão do navegador com estilos A4.
@@ -964,12 +1238,21 @@
             }
 
             dataRows.forEach((row, rowIndex) => {
-                const isRowEmpty = row.length === 0 || row.every(cell => !cell || String(cell).trim() === '');
-                if (isRowEmpty) return; 
+    const isRowEmpty = row.length === 0 || row.every(cell => !cell || String(cell).trim() === '');
+    if (isRowEmpty) return; 
 
-                const sheetRowIndex = (data[0][0] === headers[0] ? rowIndex + 2 : rowIndex + 1);
-                
-                html += `<tr data-row-index="${sheetRowIndex}">`;
+    const sheetRowIndex = (data[0][0] === headers[0] ? rowIndex + 2 : rowIndex + 1);
+    
+    // ✅ VERIFICA SE É UMA LINHA DE INFORMAÇÕES DA NOTA FISCAL
+    const isInfoRow = row.some(cell => 
+        cell && String(cell).includes('Data:') && 
+        String(cell).includes('Pedido:') && 
+        String(cell).includes('Chave:')
+    );
+    
+    const rowClass = isInfoRow ? 'bg-blue-200' : '';
+    
+    html += `<tr data-row-index="${sheetRowIndex}" class="${rowClass}">`;
                 
                 for (let i = 0; i < headers.length; i++) {
                     const cellValue = row[i] !== undefined ? row[i] : '';
@@ -1016,66 +1299,151 @@
          * Gerencia a busca de dados e a renderização do conteúdo da aba.
          */
         async function loadTabContent(sheetName) {
-            const sheetToLoad = (sheetName === "CONTAGEM LOJA") ? currentContador : sheetName;
-            const data = await fetchSheetData(sheetToLoad);
+    const sheetToLoad = (sheetName === "CONTAGEM LOJA") ? currentContador : sheetName;
+    const data = await fetchSheetData(sheetToLoad);
 
-            let targetElementId = 'dynamic-table-content';
-            let headers = [];
+    let targetElementId = 'dynamic-table-content';
+    let headers = [];
 
-            if (sheetName === "NOTA FISCAL") {
-                headers = ["Descrição", "Quantidade", "Código de Barras", "Item"];
-                targetElementId = 'dynamic-table-content';
-                const targetElement = document.getElementById(targetElementId);
-                if (targetElement) {
-                    targetElement.innerHTML = renderTable(sheetName, data, headers);
-                    updateNotaFiscalCache(data);
-                }
+    if (sheetName === "NOTA FISCAL") {
+        headers = ["Descrição", "Quantidade", "Código de Barras", "Item"];
+        targetElementId = 'dynamic-table-content';
+        const targetElement = document.getElementById(targetElementId);
+        if (targetElement) {
+            targetElement.innerHTML = renderTable(sheetName, data, headers);
+            updateNotaFiscalCache(data);
+        }
 
-            } else if (sheetName === "CONTAGEM LOJA") {
-                headers = ["Código de Barras", "Descrição"]; 
-                targetElementId = 'dynamic-table-content-contagem';
-                
-                setTimeout(() => {
-                    const contadorButtons = document.querySelectorAll('.contador-button');
-                    contadorButtons.forEach(button => {
-                        button.addEventListener('click', function() {
-                            switchContador(this.getAttribute('data-contador'));
-                        });
-                    });
-                }, 100);
-                
-                if (!notaFiscalData) {
-                    await loadNotaFiscalDataForCache();
-                }
-                
-                const targetElement = document.getElementById(targetElementId);
-                if (targetElement) {
-                    targetElement.innerHTML = renderContagemTableFixedRows(data, headers);
-                    
-                    updatePendingCount();
-                    
-                    startCacheChangeMonitor();
-                    
-                    setTimeout(() => {
-                        requestAnimationFrame(focusNextEmptyContagemCell);
-                    }, 100); 
-                }
+    } else if (sheetName === "CONTAGEM LOJA") {
+        headers = ["Código de Barras", "Descrição"]; 
+        targetElementId = 'dynamic-table-content-contagem';
+        
+        setTimeout(() => {
+            const contadorButtons = document.querySelectorAll('.contador-button');
+            contadorButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    switchContador(this.getAttribute('data-contador'));
+                });
+            });
+        }, 100);
+        
+        if (!notaFiscalData) {
+            await loadNotaFiscalDataForCache();
+        }
+        
+        const targetElement = document.getElementById(targetElementId);
+        if (targetElement) {
+            targetElement.innerHTML = renderContagemTableFixedRows(data, headers);
+            
+            updatePendingCount();
+            
+            startCacheChangeMonitor();
+            
+            setTimeout(() => {
+                requestAnimationFrame(focusNextEmptyContagemCell);
+            }, 100); 
+        }
 
-            } else if (sheetName === "CONFERENCIA") {
-                headers = ["Código de Barras", "Descrição do Produto", "Quantidade NF", "Contagem Loja", "Diferença", "OBS"]; 
-                targetElementId = 'dynamic-table-content-conferencia';
+    } else if (sheetName === "CONFERENCIA") {
+        headers = ["Código de Barras", "Descrição do Produto", "Quantidade NF", "Contagem Loja", "Diferença", "OBS"]; 
+        targetElementId = 'dynamic-table-content-conferencia';
+        
+        const targetElement = document.getElementById(targetElementId);
+        if (targetElement) {
+            // ✅ BUSCA AS INFORMAÇÕES DAS NOTAS FISCAIS (MESMO MÉTODO DO INDEX ORIGINAL)
+            const notasFiscaisInfo = await getNotasFiscaisInfo();
+            
+            // ✅ RENDERIZA APENAS AS INFORMAÇÕES DAS NOTAS FISCAIS ACIMA DA TABELA
+            const notasInfoHtml = renderNotasFiscaisInfo(notasFiscaisInfo);
+            targetElement.innerHTML = notasInfoHtml + renderTable(sheetName, data, headers);
+            
+            setTimeout(() => {
+                applyConferenciaStyles(headers.length);
+            }, 0);
+        }
+    }
+}
+
+/**
+ * ✅ FUNÇÃO: Busca informações das notas fiscais da aba NOTA FISCAL
+ */
+async function getNotasFiscaisInfo() {
+    try {
+        const notaFiscalData = await fetchSheetData("NOTA FISCAL");
+        if (!notaFiscalData || !Array.isArray(notaFiscalData)) {
+            return [];
+        }
+
+        const notasInfo = [];
+        
+        // Procura por linhas que contêm informações de notas fiscais
+        for (let row of notaFiscalData) {
+            if (row && Array.isArray(row) && row.length > 0) {
+                const firstCell = String(row[0]).trim();
                 
-                const targetElement = document.getElementById(targetElementId);
-                if (targetElement) {
-                    targetElement.innerHTML = renderTable(sheetName, data, headers);
+                // Verifica se é uma linha de informação de nota fiscal
+                if (firstCell.includes('Data:') && firstCell.includes('Pedido:') && firstCell.includes('Chave:')) {
+                    // ✅ SUBSTITUI OS NOMES PARA O FORMATO SOLICITADO
+                    let formattedInfo = firstCell;
                     
-                    setTimeout(() => {
-                        applyConferenciaStyles(headers.length);
-                    }, 0);
+                    // Substitui "NF:" por "Nfe:"
+                    formattedInfo = formattedInfo.replace(/NF:/g, 'Nfe:');
+                    
+                    // Substitui "Data:" por "Data de emissão:"
+                    formattedInfo = formattedInfo.replace(/Data:/g, 'Data de emissão:');
+                    
+                    // Substitui "Pedido:" por "Pedido Capta:"
+                    formattedInfo = formattedInfo.replace(/Pedido:/g, 'Pedido Capta:');
+                    
+                    // Mantém "Chave:" (já está correto)
+                    
+                    notasInfo.push(formattedInfo);
                 }
             }
         }
+        
+        console.log(`✅ Encontradas ${notasInfo.length} notas fiscais na aba NOTA FISCAL`);
+        return notasInfo;
+        
+    } catch (error) {
+                console.error("Erro ao buscar informações das notas fiscais:", error);
+        return [];
+    }
+}
 
+/**
+ * ✅ FUNÇÃO SIMPLES: Renderiza informações das notas fiscais (igual ao index original)
+ */
+function renderNotasFiscaisInfo(notasFiscaisInfo) {
+    if (!notasFiscaisInfo || notasFiscaisInfo.length === 0) {
+        return '<div class="mb-4 p-3 bg-gray-100 rounded-lg text-sm text-gray-600">Nenhuma nota fiscal encontrada</div>';
+    }
+
+    let html = `<div class="mb-4">`;
+    
+    // Mostra quantas notas fiscais tem - MESMA FONTE DA TABELA
+    html += `<div class="text-sm text-gray-600 mb-2 font-sans">Notas Fiscais na Conferência: ${notasFiscaisInfo.length}</div>`;
+    
+    // Mostra cada nota fiscal - MESMA FONTE DA TABELA
+    notasFiscaisInfo.forEach((info, index) => {
+        // ✅ MODIFICA APENAS NA EXIBIÇÃO DO FRONT-END
+        let formattedInfo = info;
+        
+        // Substitui "NF:" por "Nfe:"
+        formattedInfo = formattedInfo.replace(/NF:/g, 'Nfe:');
+        
+        // Substitui "Data:" por "Data de emissão:"
+        formattedInfo = formattedInfo.replace(/Data:/g, 'Data de emissão:');
+        
+        // Substitui "Pedido:" por "Pedido Capta:"
+        formattedInfo = formattedInfo.replace(/Pedido:/g, 'Pedido Capta:');
+        
+        html += `<div class="p-2 border-b border-gray-200 text-sm font-sans bg-blue-200">${formattedInfo}</div>`;
+    });
+    
+    html += `</div>`;
+    return html;
+}
         /**
          * Carrega os dados da Nota Fiscal especificamente para o cache de busca
          */
@@ -1716,7 +2084,7 @@
         }
 
         /**
-         * ✅ FUNÇÃO CORRIGIDA: Importa XML por chave ignorando espaços
+         * ✅ FUNÇÃO CORRIGIDA: Importa XML por chave ignorando espaços E EXIBE INFORMAÇÕES
          */
         async function importarXMLPorChave() {
             const chaveInput = document.getElementById("chave-acesso-input");
@@ -1725,11 +2093,19 @@
                 return;
             }
             
-            // ✅ CORREÇÃO: Remove espaços automaticamente
             let chaveAcesso = chaveInput.value.replace(/\s+/g, '');
             
             if (!chaveAcesso || chaveAcesso.length !== 44) {
                 showNotification(`Chave de acesso inválida. Deve conter 44 dígitos. (Atual: ${chaveAcesso.length} dígitos)`, "warning");
+                return;
+            }
+
+            // ✅ VERIFICAÇÃO DE DUPLICIDADE - Busca na planilha atual
+            const currentData = await fetchSheetData("NOTA FISCAL");
+            const chaveExists = checkIfChaveExists(currentData, chaveAcesso);
+            
+            if (chaveExists) {
+                showNotification("Esta nota fiscal já foi importada anteriormente!", "error");
                 return;
             }
 
@@ -1743,24 +2119,63 @@
                     body: JSON.stringify({ chaveAcesso })
                 });
 
-                const result = await response.json();
-                hideNotification();
-
-                if (!response.ok || result.error) {
-                    showNotification(`Erro: ${result.error || 'Falha desconhecida ao importar XML.'}`, "error");
-                } else {
-                    showNotification(result.message, "success");
-                    chaveInput.value = '';
-                    hidePasteModal();
-                    switchTab("NOTA FISCAL");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
+
+                const result = await response.json();
+                
+                if (result.error) {
+                    hideNotification();
+                    showNotification(`Erro: ${result.error}`, "error");
+                    return;
+                }
+
+                hideNotification();
+                showNotification(result.message, "success", 5000);
+
+                chaveInput.value = '';
+                hidePasteModal();
+                
+                setTimeout(() => {
+                    switchTab("NOTA FISCAL");
+                }, 1000);
+
             } catch (error) {
                 hideNotification();
                 console.error("Erro ao importar XML por chave:", error);
-                showNotification("Erro de rede ao tentar importar XML pela chave.", "error");
+                
+                if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+                    showNotification("Erro de conexão com o servidor. Verifique sua internet.", "error");
+                } else {
+                    showNotification(`Erro: ${error.message}`, "error");
+                }
             }
         }
-        
+
+        /**
+         * ✅ FUNÇÃO AUXILIAR: Verifica se a chave já existe nos dados atuais
+         */
+        function checkIfChaveExists(data, chaveAcesso) {
+            if (!data || !Array.isArray(data)) return false;
+            
+            // Converte a chave para o formato que aparece na planilha ("Chave: XXXXXXXXXXXXXXXXX")
+            const chaveFormatada = `Chave: ${chaveAcesso}`;
+            
+            // Procura em todas as linhas
+            for (let row of data) {
+                if (row && Array.isArray(row)) {
+                    for (let cell of row) {
+                        if (cell && String(cell).includes(chaveFormatada)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         /**
          * Função CRUCIAL: Envia o novo valor da célula editável para o Google Sheets.
          */
@@ -1910,6 +2325,52 @@
         }
 
 
+        /**
+         * Extrai informações específicas do XML
+         */
+        function extrairInformacoesXML(xmlContent) {
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+                
+                // Extrai Pedido Capta
+                const xPedElement = xmlDoc.getElementsByTagName('xPed')[0];
+                const pedidoCapta = xPedElement ? xPedElement.textContent : 'Não encontrado';
+                
+                // Extrai Número da Nota Fiscal
+                const nNFElement = xmlDoc.getElementsByTagName('nNF')[0];
+                const numeroNota = nNFElement ? nNFElement.textContent : 'Não encontrado';
+                
+                // Extrai Data de Emissão (apenas a parte da data)
+                const dhEmiElement = xmlDoc.getElementsByTagName('dhEmi')[0];
+                let dataEmissao = 'Não encontrada';
+                if (dhEmiElement) {
+                    const dataCompleta = dhEmiElement.textContent;
+                    // Extrai apenas a parte da data (YYYY-MM-DD)
+                    dataEmissao = dataCompleta.split('T')[0];
+                }
+                
+                // Extrai Chave de Acesso (opcional - para confirmar)
+                const chaveElement = xmlDoc.getElementsByTagName('chNFe')[0];
+                const chaveAcesso = chaveElement ? chaveElement.textContent : 'Não encontrada';
+                
+                return {
+                    pedidoCapta,
+                    numeroNota,
+                    dataEmissao,
+                    chaveAcesso
+                };
+            } catch (error) {
+                console.error('Erro ao extrair informações do XML:', error);
+                return {
+                    pedidoCapta: 'Erro na extração',
+                    numeroNota: 'Erro na extração',
+                    dataEmissao: 'Erro na extração',
+                    chaveAcesso: 'Erro na extração'
+                };
+            }
+        }
+
         // --- Funções de Modal e Notificação (Tailwind) ---
 
         function showPasteModal() {
@@ -1987,7 +2448,7 @@
                 }, 300);
             });
         }
-	
+    
         /**
          * Alterna entre mostrar e ocultar a senha
          */
@@ -2007,25 +2468,212 @@
             }
         }
 
-        function handleFileUploadChange(event) {
+       function handleFileUploadChange(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 const xmlContent = e.target.result;
-                importXMLData(xmlContent);
-                event.target.value = null; 
+                
+                // ✅ EXTRAI A CHAVE DO XML PARA VERIFICAÇÃO DE DUPLICIDADE
+                const chaveAcesso = extractChaveFromXML(xmlContent);
+                if (chaveAcesso) {
+                    const currentData = await fetchSheetData("NOTA FISCAL");
+                    const chaveExists = checkIfChaveExists(currentData, chaveAcesso);
+                    
+                    if (chaveExists) {
+                        showNotification("Esta nota fiscal já foi importada anteriormente!", "error");
+                        event.target.value = null;
+                        return;
+                    }
+                }
+
+                showNotification("Enviando XML para importação...", "loading");
+                
+                try {
+                    const response = await fetch(`${BACKEND_URL}/api/import-xml-data`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ xml_content: xmlContent, user_id: USER_ID })
+                    });
+
+                    const result = await response.json();
+                    hideNotification();
+
+                    if (!response.ok || result.error) {
+                        showNotification(`Falha na Importação: ${result.error || 'Erro desconhecido do servidor.'}`, 'error');
+                    } else {
+                        showNotification(result.message, 'success', 5000);
+                        switchTab("NOTA FISCAL");
+                    }
+
+                } catch (error) {
+                    hideNotification();
+                    console.error("Erro de Rede:", error);
+                    showNotification("Erro de Rede ao tentar conectar com o servidor.", 'error');
+                }
             };
             reader.onerror = function() {
                 showNotification("Erro ao ler o arquivo XML.", 'error');
             };
             reader.readAsText(file);
+            event.target.value = null;
+        }
+
+        /**
+         * ✅ FUNÇÃO AUXILIAR: Extrai chave de acesso do XML
+         */
+        function extractChaveFromXML(xmlContent) {
+            try {
+                const match = xmlContent.match(/<infNFe[^>]*Id="NFe([^"]+)"/);
+                return match ? match[1] : null;
+            } catch (error) {
+                console.error("Erro ao extrair chave do XML:", error);
+                return null;
+            }
+        }
+
+        // ✅ DETECTA SE ESTÁ NO APK ANDROID E CONFIGURA IMPRESSÃO
+        function setupAndroidPrint() {
+            // Verifica se está no APK Android (interface Android existe)
+            const isAndroidApp = typeof Android !== 'undefined';
+            
+            if (isAndroidApp) {
+                console.log("📱 APK Android detectado - Configurando impressão...");
+                
+                // Substitui a função de impressão padrão
+                const originalPrint = window.print;
+                
+                window.print = function() {
+                    if (isAndroidApp) {
+                        // Usa a função nativa do Android
+                        Android.printConferencia();
+                        return true;
+                    } else {
+                        // Fallback para impressão normal do navegador
+                        return originalPrint();
+                    }
+                };
+                
+                // Também intercepta cliques no botão "Imprimir Conferência"
+                document.addEventListener('click', function(e) {
+                    const target = e.target;
+                    if (target.textContent.includes('Imprimir Conferência') || 
+                        target.textContent.includes('imprimir conferência') ||
+                        target.onclick && target.onclick.toString().includes('printConferencia')) {
+                        
+                        if (isAndroidApp) {
+                            e.preventDefault();
+                            Android.printConferencia();
+                        }
+                    }
+                });
+                
+                console.log("✅ Impressão Android configurada com sucesso!");
+            }
+        }
+
+        // ✅ FUNÇÃO EXPORTAR PARA EXCEL (MELHORADA - FUNCIONAL)
+        function exportarParaExcel() {
+            const isAndroidApp = typeof Android !== 'undefined';
+            
+            if (isAndroidApp) {
+                Android.exportarParaExcel();
+            } else {
+                // No navegador - exporta diretamente
+                exportarCSVNoNavegador();
+            }
+        }
+
+        // ✅ FUNÇÃO PARA EXPORTAR CSV NO NAVEGADOR (CORRIGIDA - CÓDIGOS DE BARRAS FORMATADOS)
+        function exportarCSVNoNavegador() {
+            try {
+                const tabela = document.getElementById('conferencia-table');
+                if (!tabela) {
+                    showNotification('Tabela de conferência não encontrada', 'error');
+                    return;
+                }
+                
+                let csv = [];
+                
+                // ✅ ADICIONA BOM (Byte Order Mark) para UTF-8 - IMPORTANTE!
+                const BOM = "\uFEFF";
+                
+                // Cabeçalhos
+                const cabecalhos = Array.from(tabela.querySelectorAll('thead th'))
+                    .map(th => {
+                        let texto = th.textContent.trim();
+                        texto = texto.replace(/"/g, '""');
+                        return `"${texto}"`;
+                    });
+                csv.push(cabecalhos.join(';'));
+                
+                // Dados
+                const linhas = tabela.querySelectorAll('tbody tr');
+                linhas.forEach(linha => {
+                    const celulas = Array.from(linha.querySelectorAll('td'))
+                        .map((td, index) => {
+                            let texto = td.textContent.trim();
+                            
+                            // ✅ CORREÇÃO: Para a primeira coluna (Código de Barras), formata como texto
+                            if (index === 0 && texto) {
+                                // Força o Excel a tratar como texto adicionando tab no início
+                                texto = "\t" + texto;
+                            }
+                            
+                            texto = texto.replace(/"/g, '""');
+                            texto = texto.replace(/\n/g, ' ');
+                            texto = texto.replace(/\r/g, ' ');
+                            return `"${texto}"`;
+                        });
+                    
+                    if (celulas.length > 0 && celulas.some(cell => cell !== '""')) {
+                        csv.push(celulas.join(';'));
+                    }
+                });
+                
+                // ✅ CRIA CSV COM BOM E ENCODING CORRETO
+                const csvContent = BOM + csv.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                a.download = `conferencia_nfe_${Date.now()}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                showNotification('Arquivo Excel exportado com sucesso!', 'success');
+                
+            } catch (error) {
+                showNotification('Erro ao exportar: ' + error.message, 'error');
+            }
+        }
+                
+
+        // ✅ FUNÇÃO COMPARTILHAR EM PDF (MELHORADA)
+        function compartilharEmPDF() {
+            const isAndroidApp = typeof Android !== 'undefined';
+            
+            if (isAndroidApp) {
+                Android.compartilharEmPDF();
+            } else {
+                // No navegador - instruções claras
+                showNotification('Para salvar como PDF: 1. Clique em Imprimir → 2. Escolha "Salvar como PDF" → 3. Selecione local', 'info', 5000);
+                window.print();
+            }
         }
 
         // --- Inicialização ---
 
         document.addEventListener('DOMContentLoaded', function() {
+            console.log("🎯 DOM Carregado - Iniciando app...");
+            
+            // Configura listeners de teclado
             const chaveInput = document.getElementById("chave-acesso-input");
             if (chaveInput) {
                 chaveInput.addEventListener('keydown', function(event) {
@@ -2048,11 +2696,20 @@
                 }
             });
             
-            initializeApp();
+            // Configura impressão Android
+            setTimeout(setupAndroidPrint, 1000);
+            
+            // Inicializa com delay para WebView
+            setTimeout(() => {
+                initializeApp();
+            }, 1000);
         });
 
-
-
+        // ✅ TAMBÉM EXECUTA QUANDO A PÁGINA ESTIVER COMPLETAMENTE CARREGADA
+        window.addEventListener('load', function() {
+            setTimeout(setupAndroidPrint, 500);
+        });
+		
     </script>
 </body>
 </html>
