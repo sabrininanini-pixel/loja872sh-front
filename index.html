@@ -2855,7 +2855,7 @@ function clearSearch() {
 }
 
 /**
- * 🔍 BUSCA EM TODAS AS TABELAS
+ * 🔍 BUSCA EM TODAS AS TABELAS COM CONTAGEM
  */
 function performGlobalSearch() {
     const searchTerm = document.getElementById('global-search-input').value.trim().toLowerCase();
@@ -2871,6 +2871,7 @@ function performGlobalSearch() {
 
     // Busca em todas as tabelas visíveis
     const tables = document.querySelectorAll('.mock-table');
+    let totalResults = 0;
     let foundInAnyTable = false;
 
     tables.forEach(table => {
@@ -2895,6 +2896,7 @@ function performGlobalSearch() {
                 row.classList.add('bg-yellow-50');
                 foundInThisTable = true;
                 foundInAnyTable = true;
+                totalResults++; // ✅ CONTAR CADA LINHA ENCONTRADA
             } else {
                 row.style.display = 'none';
                 row.classList.remove('bg-yellow-50');
@@ -2907,14 +2909,15 @@ function performGlobalSearch() {
         }
     });
 
-    // Feedback visual
+    // Feedback visual COM CONTAGEM
     if (foundInAnyTable) {
-        showNotification(`Busca: "${searchTerm}" - Resultados encontrados`, 'success', 3000);
+        // ✅ MENSAGEM COM NÚMERO DE RESULTADOS
+        const resultText = totalResults === 1 ? '1 resultado encontrado' : `${totalResults} resultados encontrados`;
+        showNotification(`Busca: "${searchTerm}" - ${resultText}`, 'success', 3000);
     } else {
         showNotification(`Busca: "${searchTerm}" - Nenhum resultado encontrado`, 'warning', 3000);
     }
 }
-
 /**
  * 🎯 DESTACAR TEXTO ENCONTRADO
  */
