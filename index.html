@@ -175,6 +175,15 @@
         white-space: normal !important;
     }
 
+	   /*  MODO TRUNCATE (RETICÊNCIAS) */
+.truncate-mode-cell {
+    max-width: 200px !important;
+    min-width: 200px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
     /* Classe para MODO SCROLL (COLUNAS DE DESCRIÇÃO E TEXTO LONGO - 150px) */
     .scroll-mode-cell {
         max-width: 150px !important; 
@@ -1077,9 +1086,11 @@
                         <span>Importar por Chave de Acesso</span>
                     </button>
                     
-                    <button onclick="toggleScrollMode('NOTA FISCAL')" id="scroll-button-notafiscal" class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
-                        <span>Modo Scroll</span>
-                    </button>
+                   <button onclick="toggleScrollMode('NOTA FISCAL')" id="scroll-button-notafiscal" 
+        class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300"
+        data-mode="expandido">
+    <span>Modo Expandido</span>
+</button>
 
                     <button onclick="confirmClearAllSheets()" class="flex items-center space-x-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg shadow-sm hover:bg-red-100 transition duration-150 text-sm font-medium border border-red-200">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-2 0v6a1 1 0 102 0V7z" clip-rule="evenodd" /></svg>
@@ -1145,9 +1156,11 @@
                 </button>
                 
                 
-                <button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
-                    <span>Modo Scroll</span>
-                </button>
+           <button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" 
+        class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300"
+        data-mode="expandido">
+    <span>Modo Expandido</span>
+</button>
             </div>
             <div id="dynamic-table-content-conferencia">
                 <p class="text-center text-gray-400 py-10">Carregando dados...</p>
@@ -1951,77 +1964,144 @@ function renderNotasFiscaisInfo(notasFiscaisInfo) {
         }
 
         /**
-         * Alterna entre o Modo Scroll e o Modo Expandido para a tabela especificada.
-         */
-        function toggleScrollMode(sheetName) {
-            const tableID = sheetName === 'CONFERENCIA' ? 'conferencia-table' : 'notafiscal-table';
-            const buttonID = sheetName === 'CONFERENCIA' ? 'scroll-button-conferencia' : 'scroll-button-notafiscal';
+        /**
+ * 🔄 ALTERNA ENTRE 3 MODOS: Expandido → Scroll → Truncate → Expandido
+ */
+function toggleScrollMode(sheetName) {
+    const tableID = sheetName === 'CONFERENCIA' ? 'conferencia-table' : 'notafiscal-table';
+    const buttonID = sheetName === 'CONFERENCIA' ? 'scroll-button-conferencia' : 'scroll-button-notafiscal';
 
-            const table = document.getElementById(tableID);
-            const button = document.getElementById(buttonID);
+    const table = document.getElementById(tableID);
+    const button = document.getElementById(buttonID);
 
-            if (!table || !button) return;
-            
-            const isScrollModeActive = button.textContent === 'Modo Expandido';
-            
-            let columnsToTarget = [];
-            const scrollClassDesc = 'scroll-mode-cell';
-            const scrollClassNumeric = 'scroll-mode-cell-numeric';
-            const scrollClassCode = 'scroll-mode-cell-code'; 
+    if (!table || !button) return;
+    
+    const currentMode = button.getAttribute('data-mode') || 'expandido';
+    
+    let columnsToTarget = [];
+    const scrollClassDesc = 'scroll-mode-cell';
+    const scrollClassNumeric = 'scroll-mode-cell-numeric';
+    const scrollClassCode = 'scroll-mode-cell-code';
+    const expandClass = 'expand-mode-cell';
+    const truncateClass = 'truncate-mode-cell';
 
-            if (sheetName === 'CONFERENCIA') {
-                columnsToTarget = [1, 2, 3, 4, 5, 6];
-            } else if (sheetName === 'NOTA FISCAL') {
-                columnsToTarget = [1, 2, 3, 4];
-            }
+    if (sheetName === 'CONFERENCIA') {
+        columnsToTarget = [1, 2, 3, 4, 5, 6];
+    } else if (sheetName === 'NOTA FISCAL') {
+        columnsToTarget = [1, 2, 3, 4];
+    }
 
-            columnsToTarget.forEach(colIndex => {
-                const cells = table.querySelectorAll(`th:nth-child(${colIndex}), td:nth-child(${colIndex})`);
-                
-                cells.forEach(cell => {
-                    
-                    if (isScrollModeActive) {
-                        cell.classList.remove(scrollClassDesc, scrollClassNumeric, scrollClassCode);
-                        cell.classList.add('expand-mode-cell'); 
-                    } else {
-                        cell.classList.remove('expand-mode-cell');
+    // REMOVER TODAS AS CLASSES ANTERIORES
+    columnsToTarget.forEach(colIndex => {
+        const cells = table.querySelectorAll(`th:nth-child(${colIndex}), td:nth-child(${colIndex})`);
+        cells.forEach(cell => {
+            cell.classList.remove(expandClass, scrollClassDesc, scrollClassNumeric, scrollClassCode, truncateClass);
+        });
+    });
 
-                        if (sheetName === 'CONFERENCIA') {
-                            if (colIndex === 1) {
-                                cell.classList.add(scrollClassCode); 
-                            } 
-                            else if (colIndex === 2) {
-                                cell.classList.add(scrollClassDesc);
-                            }
-                            else if (colIndex >= 3 && colIndex <= 6) {
-                                cell.classList.add(scrollClassNumeric);
-                            }
-                            
-                        } else if (sheetName === 'NOTA FISCAL') {
-                            if (colIndex === 2 || colIndex === 4) {
-                                cell.classList.add(scrollClassNumeric);
-                            } else if (colIndex === 3) {
-                                cell.classList.add(scrollClassCode); 
-                            } else { 
-                                cell.classList.add(scrollClassDesc);
-                            }
-                        }
-                    }
-                });
-            });
+    // APLICAR NOVO MODO
+    let nextMode = '';
+    let buttonText = '';
+    let buttonClasses = '';
 
-            if (isScrollModeActive) {
-                button.textContent = 'Modo Scroll';
-                button.classList.remove('bg-gray-100', 'text-gray-800', 'hover:bg-gray-200', 'border-gray-300');
-                button.classList.add('bg-indigo-100', 'text-indigo-700', 'hover:bg-indigo-200', 'border-indigo-300');
-            } else {
-                button.textContent = 'Modo Expandido';
-                button.classList.remove('bg-indigo-100', 'text-indigo-700', 'hover:bg-indigo-200', 'border-indigo-300');
-                button.classList.add('bg-gray-100', 'text-gray-800', 'hover:bg-gray-200', 'border-gray-300');
-            }
-        }
-
+    if (currentMode === 'expandido') {
+        // MODO EXPANDIDO → MODO SCROLL
+        nextMode = 'scroll';
+        buttonText = 'Modo Scroll';
+        buttonClasses = 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-indigo-300';
         
+        applyScrollMode(table, sheetName, columnsToTarget);
+        
+    } else if (currentMode === 'scroll') {
+        // MODO SCROLL → MODO TRUNCATE
+        nextMode = 'truncate';
+        buttonText = 'Modo curto';
+        buttonClasses = 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-300';
+        
+        applyTruncateMode(table, sheetName, columnsToTarget);
+        
+    } else {
+        // MODO TRUNCATE → MODO EXPANDIDO
+        nextMode = 'expandido';
+        buttonText = 'Modo Expandido';
+        buttonClasses = 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300';
+        
+        applyExpandMode(table, columnsToTarget);
+    }
+
+    // ATUALIZAR BOTÃO
+    button.textContent = buttonText;
+    button.setAttribute('data-mode', nextMode);
+    
+    // REMOVER CLASSES ANTERIORES DO BOTÃO
+    button.classList.remove(
+        'bg-indigo-100', 'text-indigo-700', 'hover:bg-indigo-200', 'border-indigo-300',
+        'bg-gray-100', 'text-gray-800', 'hover:bg-gray-200', 'border-gray-300',
+        'bg-yellow-100', 'text-yellow-700', 'hover:bg-yellow-200', 'border-yellow-300'
+    );
+    
+    // ADICIONAR NOVAS CLASSES
+    buttonClasses.split(' ').forEach(cls => {
+        if (cls) button.classList.add(cls);
+    });
+}
+
+/**
+ * 📜 APLICAR MODO SCROLL
+ */
+function applyScrollMode(table, sheetName, columnsToTarget) {
+    const scrollClassDesc = 'scroll-mode-cell';
+    const scrollClassNumeric = 'scroll-mode-cell-numeric';
+    const scrollClassCode = 'scroll-mode-cell-code';
+
+    columnsToTarget.forEach(colIndex => {
+        const cells = table.querySelectorAll(`th:nth-child(${colIndex}), td:nth-child(${colIndex})`);
+        
+        cells.forEach(cell => {
+            if (sheetName === 'CONFERENCIA') {
+                if (colIndex === 1) {
+                    cell.classList.add(scrollClassCode);
+                } else if (colIndex === 2) {
+                    cell.classList.add(scrollClassDesc);
+                } else if (colIndex >= 3 && colIndex <= 6) {
+                    cell.classList.add(scrollClassNumeric);
+                }
+            } else if (sheetName === 'NOTA FISCAL') {
+                if (colIndex === 2 || colIndex === 4) {
+                    cell.classList.add(scrollClassNumeric);
+                } else if (colIndex === 3) {
+                    cell.classList.add(scrollClassCode);
+                } else {
+                    cell.classList.add(scrollClassDesc);
+                }
+            }
+        });
+    });
+}
+
+/**
+ * ✂️ APLICAR MODO TRUNCATE (RETICÊNCIAS)
+ */
+function applyTruncateMode(table, sheetName, columnsToTarget) {
+    columnsToTarget.forEach(colIndex => {
+        const cells = table.querySelectorAll(`th:nth-child(${colIndex}), td:nth-child(${colIndex})`);
+        cells.forEach(cell => {
+            cell.classList.add('truncate-mode-cell');
+        });
+    });
+}
+
+/**
+ * 📏 APLICAR MODO EXPANDIDO
+ */
+function applyExpandMode(table, columnsToTarget) {
+    columnsToTarget.forEach(colIndex => {
+        const cells = table.querySelectorAll(`th:nth-child(${colIndex}), td:nth-child(${colIndex})`);
+        cells.forEach(cell => {
+            cell.classList.add('expand-mode-cell');
+        });
+    });
+}
         /**
          * Aplica formatação condicional à coluna Diferença (E) na aba CONFERENCIA.
          */
