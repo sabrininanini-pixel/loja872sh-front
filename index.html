@@ -446,9 +446,34 @@
                     <button data-tab="CONFERENCIA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONFERENCIA</button>
                 </nav>
 
+
+
+<!-- ✅ BOTÃO DE BUSCA UNIVERSAL -->
+<div class="flex flex-wrap gap-3 pb-4 mb-4 border-b border-gray-200 print-hidden">
+    <div class="relative flex-1 min-w-[300px]">
+        <input 
+            type="text" 
+            id="global-search-input"
+            placeholder="Buscar em todas as colunas..." 
+            class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+        <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </div>
+    <button 
+        onclick="clearSearch()"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition duration-150"
+    >
+        Limpar
+    </button>
+</div>
+				
                 <div id="content-stack" class="pt-6">
                 </div>
-                
+
+				
+				
             </div>
         </div>
 
@@ -1025,6 +1050,9 @@
             }
             
             loadTabContent(sheetName);
+
+
+			    clearSearch(); // Limpa busca ao mudar de aba
         }
 
         // ÍCONES
@@ -2709,6 +2737,131 @@ function renderNotasFiscaisInfo(notasFiscaisInfo) {
         window.addEventListener('load', function() {
             setTimeout(setupAndroidPrint, 500);
         });
+
+// =========================================================================
+// SISTEMA DE BUSCA UNIVERSAL
+// =========================================================================
+
+let currentSearchTerm = '';
+
+/**
+ * 🔍 BUSCA EM TODAS AS TABELAS
+ */
+function performGlobalSearch() {
+    const searchTerm = document.getElementById('global-search-input').value.trim().toLowerCase();
+    currentSearchTerm = searchTerm;
+    
+    if (!searchTerm) {
+        clearSearch();
+        return;
+    }
+
+    // Busca em todas as tabelas visíveis
+    const tables = document.querySelectorAll('.mock-table');
+    let foundInAnyTable = false;
+
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        let foundInThisTable = false;
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            let rowContainsSearch = false;
+
+            cells.forEach(cell => {
+                const cellText = cell.textContent.toLowerCase();
+                if (cellText.includes(searchTerm)) {
+                    rowContainsSearch = true;
+                    // Destacar o texto encontrado
+                    highlightText(cell, searchTerm);
+                }
+            });
+
+            if (rowContainsSearch) {
+                row.style.display = '';
+                row.classList.add('bg-yellow-50');
+                foundInThisTable = true;
+                foundInAnyTable = true;
+            } else {
+                row.style.display = 'none';
+                row.classList.remove('bg-yellow-50');
+            }
+        });
+
+        // Mostrar mensagem se não encontrou nesta tabela
+        if (!foundInThisTable) {
+            console.log(`Não encontrado na tabela: ${table.id}`);
+        }
+    });
+
+    // Feedback visual
+    if (foundInAnyTable) {
+        showNotification(`Busca: "${searchTerm}" - Resultados encontrados`, 'success', 3000);
+    } else {
+        showNotification(`Busca: "${searchTerm}" - Nenhum resultado encontrado`, 'warning', 3000);
+    }
+}
+
+/**
+ * 🎯 DESTACAR TEXTO ENCONTRADO
+ */
+function highlightText(element, searchTerm) {
+    const text = element.textContent;
+    const regex = new RegExp(`(${searchTerm})`, 'gi');
+    const highlighted = text.replace(regex, '<mark class="bg-yellow-300 px-1 rounded">$1</mark>');
+    element.innerHTML = highlighted;
+}
+
+/**
+ * 🗑️ LIMPAR BUSCA
+ */
+function clearSearch() {
+    document.getElementById('global-search-input').value = '';
+    currentSearchTerm = '';
+    
+    // Restaurar todas as linhas
+    const tables = document.querySelectorAll('.mock-table');
+    tables.forEach(table => {
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.style.display = '';
+            row.classList.remove('bg-yellow-50');
+            
+            // Remover highlights
+            const cells = row.querySelectorAll('td');
+            cells.forEach(cell => {
+                cell.innerHTML = cell.textContent; // Remove marcações HTML
+            });
+        });
+    });
+    
+    showNotification('Busca limpa', 'info', 2000);
+}
+
+/**
+ * 🎹 EVENT LISTENER PARA ENTER
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('global-search-input');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performGlobalSearch();
+            }
+        });
+        
+        // Busca em tempo real (opcional)
+        searchInput.addEventListener('input', function(e) {
+            const term = e.target.value.trim();
+            if (term.length >= 3) {
+                performGlobalSearch();
+            } else if (term.length === 0) {
+                clearSearch();
+            }
+        });
+    }
+});
+		
 		
     </script>
 </body>
