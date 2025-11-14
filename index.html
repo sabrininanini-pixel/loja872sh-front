@@ -369,6 +369,8 @@ body {
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
+		padding-bottom: 8px;
+        margin: 0 -8px;
         padding-left: 8px;
         padding-right: 8px;
     }
@@ -492,7 +494,7 @@ body {
                 <nav class="flex border-b border-gray-200 print-hidden">
                     <button data-tab="NOTA FISCAL" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 transition-colors duration-150">NOTA FISCAL</button>
                     <button data-tab="CONTAGEM LOJA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONTAGEM LOJA</button>
-                    <button data-tab="CONFERÊNCIA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONFERENCIA</button>
+                    <button data-tab="CONFERÊNCIA" class="tab-button px-4 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors duration-150">CONFERÊNCIA</button>
                 </nav>
 
 
@@ -1099,7 +1101,7 @@ body {
             } else if (sheetName === "CONTAGEM LOJA") {
                 contentStack.innerHTML = renderContagemLojaLayout();
                 currentContador = 'CONTAGEM LOJA';
-            } else if (sheetName === "CONFERENCIA") {
+            } else if (sheetName === "CONFERÊNCIA") {
                 contentStack.innerHTML = renderConferenciaLayout();
             }
             
