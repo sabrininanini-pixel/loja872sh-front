@@ -2828,87 +2828,129 @@ function applyExpandMode(table, columnsToTarget) {
                 console.log("✅ Impressão Android configurada com sucesso!");
             }
         }
+/**
+ * ✅ EXPORTAR EXCEL CORRIGIDO - Inclui informações das notas e exporta apenas o visível
+ */
+function exportarParaExcel() {
+    const isAndroidApp = typeof Android !== 'undefined';
+    
+    if (isAndroidApp) {
+        Android.exportarParaExcel();
+    } else {
+        exportarCSVNoNavegador();
+    }
+}
 
-        // ✅ FUNÇÃO EXPORTAR PARA EXCEL (MELHORADA - FUNCIONAL)
-        function exportarParaExcel() {
-            const isAndroidApp = typeof Android !== 'undefined';
+/**
+ * ✅ EXPORTAR CSV CORRIGIDO - Inclui informações das notas e apenas linhas visíveis
+ */
+function exportarCSVNoNavegador() {
+    try {
+        const tabela = document.getElementById('conferencia-table');
+        if (!tabela) {
+            showNotification('Tabela de conferência não encontrada', 'error');
+            return;
+        }
+        
+        let csv = [];
+        
+        // ✅ ADICIONA BOM (Byte Order Mark) para UTF-8
+        const BOM = "\uFEFF";
+        
+        // ✅ 1. INCLUIR INFORMAÇÕES DAS NOTAS FISCAIS
+        const notasInfoElements = document.querySelectorAll('#dynamic-table-content-conferencia .mb-4 > div');
+        if (notasInfoElements.length > 0) {
+            // Adiciona título para as informações das notas
+            csv.push('"INFORMAÇÕES DAS NOTAS FISCAIS"');
             
-            if (isAndroidApp) {
-                Android.exportarParaExcel();
-            } else {
-                // No navegador - exporta diretamente
-                exportarCSVNoNavegador();
-            }
+            notasInfoElements.forEach(notaElement => {
+                let textoNota = notaElement.textContent.trim();
+                textoNota = textoNota.replace(/"/g, '""');
+                csv.push(`"${textoNota}"`);
+            });
+            
+            // Linha em branco para separar
+            csv.push('""');
         }
-
-        // ✅ FUNÇÃO PARA EXPORTAR CSV NO NAVEGADOR (CORRIGIDA - CÓDIGOS DE BARRAS FORMATADOS)
-        function exportarCSVNoNavegador() {
-            try {
-                const tabela = document.getElementById('conferencia-table');
-                if (!tabela) {
-                    showNotification('Tabela de conferência não encontrada', 'error');
-                    return;
-                }
-                
-                let csv = [];
-                
-                // ✅ ADICIONA BOM (Byte Order Mark) para UTF-8 - IMPORTANTE!
-                const BOM = "\uFEFF";
-                
-                // Cabeçalhos
-                const cabecalhos = Array.from(tabela.querySelectorAll('thead th'))
-                    .map(th => {
-                        let texto = th.textContent.trim();
-                        texto = texto.replace(/"/g, '""');
-                        return `"${texto}"`;
-                    });
-                csv.push(cabecalhos.join(';'));
-                
-                // Dados
-                const linhas = tabela.querySelectorAll('tbody tr');
-                linhas.forEach(linha => {
-                    const celulas = Array.from(linha.querySelectorAll('td'))
-                        .map((td, index) => {
-                            let texto = td.textContent.trim();
-                            
-                            // ✅ CORREÇÃO: Para a primeira coluna (Código de Barras), formata como texto
-                            if (index === 0 && texto) {
-                                // Força o Excel a tratar como texto adicionando tab no início
-                                texto = "\t" + texto;
-                            }
-                            
-                            texto = texto.replace(/"/g, '""');
-                            texto = texto.replace(/\n/g, ' ');
-                            texto = texto.replace(/\r/g, ' ');
-                            return `"${texto}"`;
-                        });
+        
+        // ✅ 2. CABEÇALHOS DA TABELA
+        const cabecalhos = Array.from(tabela.querySelectorAll('thead th'))
+            .map(th => {
+                let texto = th.textContent.trim();
+                texto = texto.replace(/"/g, '""');
+                return `"${texto}"`;
+            });
+        csv.push(cabecalhos.join(';'));
+        
+        // ✅ 3. DADOS DA TABELA - APENAS LINHAS VISÍVEIS
+        const linhas = tabela.querySelectorAll('tbody tr');
+        let linhasExportadas = 0;
+        
+        linhas.forEach(linha => {
+            // ✅ VERIFICA SE A LINHA ESTÁ VISÍVEL (não oculta pelo filtro)
+            const estilo = window.getComputedStyle(linha);
+            if (estilo.display === 'none') {
+                return; // Pula linhas ocultas
+            }
+            
+            const celulas = Array.from(linha.querySelectorAll('td'))
+                .map((td, index) => {
+                    let texto = td.textContent.trim();
                     
-                    if (celulas.length > 0 && celulas.some(cell => cell !== '""')) {
-                        csv.push(celulas.join(';'));
+                    // ✅ CORREÇÃO: Para a primeira coluna (Código de Barras), formata como texto
+                    if (index === 0 && texto) {
+                        // Força o Excel a tratar como texto adicionando tab no início
+                        texto = "\t" + texto;
                     }
+                    
+                    texto = texto.replace(/"/g, '""');
+                    texto = texto.replace(/\n/g, ' ');
+                    texto = texto.replace(/\r/g, ' ');
+                    return `"${texto}"`;
                 });
-                
-                // ✅ CRIA CSV COM BOM E ENCODING CORRETO
-                const csvContent = BOM + csv.join('\n');
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                
-                a.download = `conferencia_nfe_${Date.now()}.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                
-                showNotification('Arquivo Excel exportado com sucesso!', 'success');
-                
-            } catch (error) {
-                showNotification('Erro ao exportar: ' + error.message, 'error');
+            
+            if (celulas.length > 0 && celulas.some(cell => cell !== '""')) {
+                csv.push(celulas.join(';'));
+                linhasExportadas++;
             }
-        }
-                
-
+        });
+        
+        // ✅ 4. CRIA CSV COM BOM E ENCODING CORRETO
+        const csvContent = BOM + csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // ✅ 5. NOME DO ARQUIVO INCLUI DATA E STATUS DO FILTRO
+        const dataAtual = new Date().toISOString().split('T')[0];
+        const horaAtual = new Date().toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        }).replace(/:/g, '-');
+        
+        const filtroAtivo = document.getElementById('divergencias-button').textContent.includes('Mostrar todas');
+        const statusFiltro = filtroAtivo ? 'filtrado' : 'completo';
+        
+        a.download = `conferencia_nfe_${dataAtual}_${horaAtual}_${statusFiltro}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        // ✅ 6. FEEDBACK DETALHADO
+        const totalLinhas = linhas.length;
+        const mensagem = `Arquivo Excel exportado com sucesso! 
+                         ${linhasExportadas} de ${totalLinhas} linhas ${filtroAtivo ? '(filtradas)' : '(todas)'}
+                         ${notasInfoElements.length > 0 ? '+ informações das notas fiscais' : ''}`;
+        
+        showNotification(mensagem, 'success', 5000);
+        
+    } catch (error) {
+        console.error('Erro ao exportar:', error);
+        showNotification('Erro ao exportar: ' + error.message, 'error');
+    }
+}
         // ✅ FUNÇÃO COMPARTILHAR EM PDF (MELHORADA)
         function compartilharEmPDF() {
             const isAndroidApp = typeof Android !== 'undefined';
