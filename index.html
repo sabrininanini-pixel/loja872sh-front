@@ -3193,20 +3193,20 @@ function filtrarDivergencias() {
                 // Modo "Mostrar todas" - mostra todas as linhas
                 row.style.display = '';
                 if (isDivergencia) {
-                    row.classList.add('bg-yellow-50');
+                    row.classList.add('bg-yellow-10');
                     divergenciasCount++;
                 } else {
-                    row.classList.remove('bg-yellow-50');
+                    row.classList.remove('bg-yellow-10');
                 }
             } else {
                 // Modo "Mostrar apenas divergências" - filtra
                 if (isDivergencia) {
                     row.style.display = '';
-                    row.classList.add('bg-yellow-50');
+                    row.classList.add('bg-yellow-10');
                     divergenciasCount++;
                 } else {
                     row.style.display = 'none';
-                    row.classList.remove('bg-yellow-50');
+                    row.classList.remove('bg-yellow-10');
                 }
             }
         }
