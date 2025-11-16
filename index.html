@@ -1543,7 +1543,7 @@ body {
         }
 
     } else if (sheetName === "CONFERENCIA") {
-        headers = ["Código de Barras", "Descrição do Produto", "Quantidade NF", "Contagem Loja", "Diferença", "OBS"]; 
+        headers = ["Código de Barras", "Descrição do Produto", "Quantidade NF", "Contagem Loja", "Diferença", "Danos/Defeito"]; 
         targetElementId = 'dynamic-table-content-conferencia';
         
         const targetElement = document.getElementById(targetElementId);
@@ -3171,7 +3171,7 @@ function filtrarDivergencias() {
             totalRows++;
             
             const diferencaCell = cells[4]; // 5ª coluna (Diferença)
-            const obsCell = cells[5];       // 6ª coluna (OBS)
+            const obsCell = cells[5];       // 6ª coluna (OBS - agora danos defeito)
             
             let isDivergencia = false;
             
