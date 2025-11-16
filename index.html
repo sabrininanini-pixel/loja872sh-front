@@ -245,43 +245,151 @@ body {
     /* ---------------------------------------------------------------- */
     /* --- Estilos de Impressão (A4) --- */
     /* ---------------------------------------------------------------- */
-    @media print {
-        body {
-            margin: 0;
-            padding: 0;
-            width: 210mm; 
-            min-height: 297mm;
-        }
-
-        .container, .bg-white, .shadow-lg {
-            box-shadow: none !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-            border: none !important;
-        }
-        header, nav, #paste-modal, #notifications-container, .print-hidden {
-            display: none !important;
-        }
-
-        .mock-table {
-            width: 100%;
-            font-size: 10pt;
-        }
-        .mock-table th, .mock-table td {
-            padding: 4px; 
-            border-bottom: 1px solid #ccc;
-            border-right: 1px solid #ccc;
-        }
-        
-        .scroll-mode-cell, .scroll-mode-cell-numeric, .expand-mode-cell, .scroll-mode-cell-code {
-            max-width: none !important;
-            min-width: 0 !important;
-            overflow-x: visible !important;
-            white-space: normal !important;
-        }
+   @media print {
+    * {
+        box-sizing: border-box;
     }
+    
+    body {
+        margin: 0 !important;
+        padding: 10px !important;
+        width: 100% !important;
+        min-height: 297mm;
+        font-size: 10pt !important;
+        line-height: 1.2 !important;
+        background: white !important;
+        color: black !important;
+    }
+
+    .container, .bg-white, .shadow-lg {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        border: none !important;
+        background: white !important;
+    }
+    
+    /* Ocultar elementos não essenciais */
+    header, nav, #paste-modal, #notifications-container, .print-hidden,
+    .flex.border-b, .flex.flex-wrap, button, .tab-button {
+        display: none !important;
+    }
+
+    /* ✅ CORREÇÃO DA TABELA - FORÇAR CABER NA PÁGINA */
+    .mock-table {
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 8pt !important;
+        border-collapse: collapse;
+        page-break-inside: auto;
+    }
+    
+    .mock-table th, .mock-table td {
+        padding: 3px 4px !important;
+        border: 1px solid #ccc !important;
+        font-size: 8pt !important;
+        line-height: 1.1 !important;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .mock-table th {
+        background-color: #f8f9fa !important;
+        font-weight: bold !important;
+        color: black !important;
+    }
+    
+    /* ✅ REMOVER TODOS OS MODOS DE LARGURA FIXA NA IMPRESSÃO */
+    .scroll-mode-cell, .scroll-mode-cell-numeric, .expand-mode-cell, 
+    .scroll-mode-cell-code, .truncate-mode-cell {
+        max-width: none !important;
+        min-width: auto !important;
+        width: auto !important;
+        overflow: visible !important;
+        white-space: normal !important;
+        text-overflow: clip !important;
+    }
+    
+    /* ✅ FORÇAR QUEBRA DE TEXTO LONGO */
+    .mock-table td {
+        word-break: break-word;
+        hyphens: auto;
+    }
+    
+    /* ✅ AJUSTAR LARGURAS ESPECÍFICAS DAS COLUNAS PARA IMPRESSÃO */
+    #conferencia-table th:nth-child(1),
+    #conferencia-table td:nth-child(1) {
+        width: 15% !important; /* Código de Barras */
+    }
+    
+    #conferencia-table th:nth-child(2),
+    #conferencia-table td:nth-child(2) {
+        width: 40% !important; /* Descrição */
+    }
+    
+    #conferencia-table th:nth-child(3),
+    #conferencia-table td:nth-child(3),
+    #conferencia-table th:nth-child(4),
+    #conferencia-table td:nth-child(4),
+    #conferencia-table th:nth-child(5),
+    #conferencia-table td:nth-child(5),
+    #conferencia-table th:nth-child(6),
+    #conferencia-table td:nth-child(6) {
+        width: 10% !important; /* Colunas numéricas */
+        text-align: center !important;
+    }
+    
+    /* ✅ MANTER CORES DAS DIVERGÊNCIAS MESMO NA IMPRESSÃO */
+    .bg-fee2e2, .text-b91c1c {
+        background-color: #fee2e2 !important;
+        color: #b91c1c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .bg-green-100, .text-green-700 {
+        background-color: #d1fae5 !important;
+        color: #047857 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .bg-yellow-50 {
+        background-color: #fefce8 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    /* ✅ EVITAR QUEBRA DE LINHA NO MEIO DA LINHA */
+    .mock-table tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    
+    /* ✅ CABEÇALHO FIXO NA IMPRESSÃO (se possível) */
+    .mock-table thead {
+        display: table-header-group;
+    }
+    
+    .mock-table th {
+        position: static !important;
+    }
+    
+    /* ✅ INFORMAÇÕES DAS NOTAS FISCAIS NA IMPRESSÃO */
+    .mb-4 {
+        margin-bottom: 8px !important;
+    }
+    
+    .mb-4 > div {
+        background: #e5e7eb !important;
+        padding: 4px 6px !important;
+        margin-bottom: 2px !important;
+        font-size: 7pt !important;
+        border: 1px solid #d1d5db !important;
+    }
+}
     
     /* ---------------------------------------------------------------- */
     /* --- Ajuste de Notificação para Mobile (Compactação) --- */
