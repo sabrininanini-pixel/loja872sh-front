@@ -389,6 +389,13 @@ body {
         font-size: 7pt !important;
         border: 1px solid #d1d5db !important;
     }
+
+	       .bg-red-100 {
+        background-color: #fee2e2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
 }
     
     /* ---------------------------------------------------------------- */
@@ -479,6 +486,14 @@ body {
     margin-top: 0 !important;
     padding-top: 0 !important;
     gap: 0 !important;
+
+		   .bg-red-100 {
+    background-color: #fee2e2 !important; /* Vermelho bem suave */
+}
+
+.bg-red-100:hover {
+    background-color: #fecaca !important; /* Vermelho um pouco mais forte no hover */
+}
 	   
 </style>
 </head>
@@ -2248,29 +2263,48 @@ function applyExpandMode(table, columnsToTarget) {
         });
     });
 }
-        /**
-         * Aplica formatação condicional à coluna Diferença (E) na aba CONFERENCIA.
-         */
-        function applyConferenciaStyles(numCols) {
-            const rows = document.querySelectorAll('#conferencia-content .mock-table tbody tr');
+      /**
+ * ✅ APLICA FORMATAÇÃO CONDICIONAL NA ABA CONFERENCIA - VERSÃO ATUALIZADA
+ * - Diferença negativa: Vermelho
+ * - Diferença positiva: Verde  
+ * - Danos/Defeito preenchido: Vermelho suave
+ */
+function applyConferenciaStyles(numCols) {
+    const rows = document.querySelectorAll('#conferencia-content .mock-table tbody tr');
 
-            rows.forEach(row => {
-                const diffCell = row.querySelector('td:nth-child(5)');
-                if (!diffCell) return;
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 6) return;
 
-                let value = parseFloat(diffCell.textContent.replace(',', '.').trim());
-                
-                diffCell.classList.remove('bg-fee2e2', 'text-b91c1c', 'bg-green-100', 'text-green-700');
+        const diferencaCell = cells[4]; // 5ª coluna (Diferença)
+        const danosDefeitoCell = cells[5]; // 6ª coluna (Danos/Defeito)
+        
+        // ✅ REMOVER TODAS AS CLASSES DE COR ANTERIORES
+        row.classList.remove('bg-fee2e2', 'bg-green-100');
+        diferencaCell.classList.remove('bg-fee2e2', 'text-b91c1c', 'bg-green-100', 'text-green-700');
+        danosDefeitoCell.classList.remove('bg-red-100');
 
-                if (isNaN(value) || value === 0) {
-                } else if (value < 0) {
-                    diffCell.classList.add('bg-fee2e2', 'text-b91c1c');
-                } else if (value > 0) {
-                    diffCell.classList.add('bg-green-100', 'text-green-700');
-                }
-            });
+        // ✅ 1. VERIFICAR DANOS/DEFEITO (PRIORIDADE MÁXIMA)
+        if (danosDefeitoCell && danosDefeitoCell.textContent.trim() !== '') {
+            danosDefeitoCell.classList.add('bg-red-100');
         }
 
+        // ✅ 2. VERIFICAR DIFERENÇA (SE NÃO HOUVER DANOS/DEFEITO)
+        if (diferencaCell && danosDefeitoCell.textContent.trim() === '') {
+            let value = parseFloat(diferencaCell.textContent.replace(',', '.').trim());
+            
+            if (isNaN(value) || value === 0) {
+                // Nada a fazer - sem formatação
+            } else if (value < 0) {
+                // Diferença negativa - Vermelho
+                diferencaCell.classList.add('bg-fee2e2', 'text-b91c1c');
+            } else if (value > 0) {
+                // Diferença positiva - Verde
+                diferencaCell.classList.add('bg-green-100', 'text-green-700');
+            }
+        }
+    });
+}
 
         // --- Funções de API e Utilitários ---
         
