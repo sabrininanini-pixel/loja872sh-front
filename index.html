@@ -1184,47 +1184,77 @@ body {
          * Altera a aba ativa e carrega o conteúdo.
          * AGORA COM CONTROLE DE MONITOR DE CACHE
          */
-        function switchTab(sheetName) {
-            autoSaveContagemOnTabChange();
+      *
+async function switchTab(sheetName) {
+    // ✅ SALVA OS DADOS DA CONTAGEM ANTES DE SAIR (SE ESTIVER NA CONTAGEM)
+    const currentTab = document.querySelector('.tab-button.border-indigo-600')?.dataset.tab;
+    
+    if (currentTab === 'CONTAGEM LOJA' && sheetName !== 'CONTAGEM LOJA') {
+        console.log('🔄 Saindo da Contagem Loja - Salvando dados antes de mudar...');
+        
+        const cacheKey = `${CACHE_KEY}_${currentContador}`;
+        const cachedData = loadFromCache(cacheKey);
+        const hasData = Object.keys(cachedData).filter(key => key.startsWith('A')).length > 0;
+        
+        if (hasData) {
+            // ✅ MOSTRA LOADING E SALVA SINCRONAMENTE
+            showNotification('Salvando dados da contagem antes de mudar...', 'loading');
             
-            const currentTab = document.querySelector('.tab-button.border-indigo-600')?.dataset.tab;
-            if (currentTab === 'CONTAGEM LOJA' && sheetName !== 'CONTAGEM LOJA') {
-                if (cacheChangeTimer) {
-                    clearTimeout(cacheChangeTimer);
-                }
+            try {
+                // ✅ AGUARDA O SALVAMENTO COMPLETAR ANTES DE MUDAR DE ABA
+                await processBatchUpdate();
+                showNotification('Dados salvos com sucesso!', 'success', 2000);
+            } catch (error) {
+                console.error('Erro ao salvar dados:', error);
+                showNotification('Erro ao salvar dados, mas continuando...', 'warning', 2000);
             }
-            
-            if (sheetName === 'CONTAGEM LOJA') {
-                startCacheChangeMonitor();
-            }
-
-            tabButtons.forEach(btn => {
-                if (btn.dataset.tab === sheetName) {
-                    btn.classList.add('border-indigo-600', 'text-indigo-600');
-                    btn.classList.remove('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
-                } else {
-                    btn.classList.remove('border-indigo-600', 'text-indigo-600');
-                    btn.classList.add('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
-                }
-            });
-
-            contentStack.innerHTML = `<div class="text-center py-10 text-gray-500">Carregando dados de ${sheetName}...</div>`;
-            
-            if (sheetName === "NOTA FISCAL") {
-                contentStack.innerHTML = renderNotaFiscalLayout();
-            } else if (sheetName === "CONTAGEM LOJA") {
-                contentStack.innerHTML = renderContagemLojaLayout();
-                currentContador = 'CONTAGEM LOJA';
-            } else if (sheetName === "CONFERENCIA") {
-                contentStack.innerHTML = renderConferenciaLayout();
-            }
-            
-            loadTabContent(sheetName);
-
-
-			    clearSearch(); // Limpa busca ao mudar de aba
         }
+    }
+    
+    // ✅ PARA O MONITOR DE CACHE SE ESTIVER SAINDO DA CONTAGEM
+    if (currentTab === 'CONTAGEM LOJA' && sheetName !== 'CONTAGEM LOJA') {
+        if (cacheChangeTimer) {
+            clearTimeout(cacheChangeTimer);
+        }
+    }
+    
+    // ✅ ATUALIZA AS ABAS
+    tabButtons.forEach(btn => {
+        if (btn.dataset.tab === sheetName) {
+            btn.classList.add('border-indigo-600', 'text-indigo-600');
+            btn.classList.remove('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+        } else {
+            btn.classList.remove('border-indigo-600', 'text-indigo-600');
+            btn.classList.add('border-transparent', 'text-gray-500', 'hover:border-gray-300', 'hover:text-gray-700');
+        }
+    });
 
+    contentStack.innerHTML = `<div class="text-center py-10 text-gray-500">Carregando dados de ${sheetName}...</div>`;
+    
+    if (sheetName === "NOTA FISCAL") {
+        contentStack.innerHTML = renderNotaFiscalLayout();
+    } else if (sheetName === "CONTAGEM LOJA") {
+        contentStack.innerHTML = renderContagemLojaLayout();
+        currentContador = 'CONTAGEM LOJA';
+    } else if (sheetName === "CONFERENCIA") {
+        contentStack.innerHTML = renderConferenciaLayout();
+    }
+    
+    // ✅ CARREGA O CONTEÚDO COM UM PEQUENO DELAY PARA GARANTIR ATUALIZAÇÃO
+    setTimeout(async () => {
+        await loadTabContent(sheetName);
+        
+        // ✅ SE FOR CONFERÊNCIA, FORÇA UM RELOAD APÓS 1 SEGUNDO PARA PEGAR DADOS ATUALIZADOS
+        if (sheetName === "CONFERENCIA") {
+            setTimeout(async () => {
+                console.log('🔄 Forçando atualização da Conferência para dados mais recentes...');
+                await loadTabContent("CONFERENCIA");
+            }, 1000);
+        }
+    }, 100);
+    
+    clearSearch(); // Limpa busca ao mudar de aba
+}
         // ÍCONES
         const documentIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>`;
         const printerIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m-1-5a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2zm-4 4h4v2a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2h4z" /></svg>`;
