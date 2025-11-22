@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+																																																																										<!DOCTYPE html>
 <html lang="pt-br">
 <head>
 
@@ -396,6 +396,12 @@ body {
         print-color-adjust: exact;
     }
 
+	    /* ✅ OCULTAR COLUNA AJUSTAR NA IMPRESSÃO */
+    #conferencia-table th:nth-child(6),
+    #conferencia-table td:nth-child(6) {
+        display: none !important;
+    }
+
 }
     
     /* ---------------------------------------------------------------- */
@@ -493,6 +499,19 @@ body {
 
 .bg-red-100:hover {
     background-color: #fecaca !important; /* Vermelho um pouco mais forte no hover */
+}
+
+		   .igualar-btn {
+    background: transparent !important;
+    color: #4B5563 !important; /* Cor cinza (texto normal) */
+    border: 1px solid transparent !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.igualar-btn:hover {
+    background: #F3F4F6 !important; /* Cinza muito claro no hover */
+    border-color: #D1D5DB !important; /* Borda cinza no hover */
+    color: #374151 !important; /* Texto um pouco mais escuro no hover */
 }
 	   
 </style>
@@ -1038,6 +1057,10 @@ body {
         const tabButtons = document.querySelectorAll('.tab-button');
         const contentStack = document.getElementById('content-stack');
 
+        // --- Cache para ajustes da Conferência ---
+        const CONFERENCE_ADJUSTMENTS_KEY = 'conference_adjustments_cache';
+        let conferenceAdjustments = {};
+
         tabButtons.forEach(button => {
             button.addEventListener('click', () => switchTab(button.dataset.tab));
         });
@@ -1314,7 +1337,7 @@ function realizarMudancaParaConferencia(sheetName) {
                         <span>Importar por Chave de Acesso</span>
                     </button>
                     
-                   <button onclick="toggleScrollMode('NOTA FISCAL')" id="scroll-button-notafiscal" class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
+               <button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" class="flex md:hidden items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
     <span>Modo Scroll</span>
 </button>
 
@@ -1368,20 +1391,22 @@ function realizarMudancaParaConferencia(sheetName) {
     return `
         <div id="conferencia-content">
             <div class="flex flex-wrap gap-3 pb-4 mb-4 border-b border-gray-200 print-hidden">
-                <button onclick="printConferencia()" class="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow-sm hover:bg-blue-200 transition duration-150 text-sm font-medium border border-blue-300">
-                    <span class="text-blue-600">${printerIcon}</span>
-                    <span>Imprimir ou salvar em PDF</span>
-                </button>
+                <button onclick="printConferencia()" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m-1-5a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2zm-4 4h4v2a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2h4z" />
+    </svg>
+    <span>Imprimir ou salvar em PDF</span>
+</button>
+
+<!-- ✅ BOTÃO EXPORTAR EXCEL -->
+<button onclick="exportarParaExcel()" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+    <span>Exportar Excel</span>
+</button>
                 
-                <!-- ✅ NOVO BOTÃO EXPORTAR EXCEL -->
-                <button onclick="exportarParaExcel()" class="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg shadow-sm hover:bg-green-200 transition duration-150 text-sm font-medium border border-green-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Exportar Excel</span>
-                </button>
-                
-                <!-- ✅ NOVO BOTÃO 1: MOSTRAR APENAS DIVERGÊNCIAS -->
+                <!-- ✅ BOTÃO 1: MOSTRAR APENAS DIVERGÊNCIAS -->
                 <button onclick="filtrarDivergencias()" id="divergencias-button" class="flex items-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg shadow-sm hover:bg-red-200 transition duration-150 text-sm font-medium border border-red-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -1389,17 +1414,25 @@ function realizarMudancaParaConferencia(sheetName) {
                     <span>Mostrar apenas divergências</span>
                 </button>
                 
-                <!-- ✅ NOVO BOTÃO 2: INTEGRAR NOTA -->
-                <button onclick="abrirIntegracaoNota()" class="flex items-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg shadow-sm hover:bg-blue-200 transition duration-150 text-sm font-medium border border-blue-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                    <span>Integrar nota</span>
-                </button>
+                <!-- ✅ BOTÃO 2: INTEGRAR NOTA -->
+<button onclick="abrirIntegracaoNota()" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+    </svg>
+    <span>Integrar nota</span>
+</button>
+
+<!-- ✅ BOTÃO ENVIAR EMAIL -->
+<button onclick="abrirOpcoesEmail()" class="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-lg shadow-sm hover:bg-gray-200 transition duration-150 text-sm font-medium border border-gray-300">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+    <span>Enviar por Email</span>
+</button>
                 
-                <button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" class="flex items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
-                    <span>Modo Scroll</span>
-                </button>
+<button onclick="toggleScrollMode('CONFERENCIA')" id="scroll-button-conferencia" class="flex md:hidden items-center space-x-2 px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg shadow-sm hover:bg-indigo-200 transition duration-150 text-sm font-medium border border-indigo-300">
+    <span>Modo Scroll</span>
+</button>
             </div>
             <div id="dynamic-table-content-conferencia">
                 <p class="text-center text-gray-400 py-10">Carregando dados...</p>
@@ -1482,97 +1515,128 @@ function realizarMudancaParaConferencia(sheetName) {
 
 
         /**
-         * Renderiza os dados do Sheets em uma tabela HTML (usado para NF e Conferencia).
-         */
-        function renderTable(sheetName, data, headers) {
-            
-            if (!data || data.length === 0) {
-                return `<p class="text-center text-gray-500 py-10">Nenhum dado encontrado no Google Sheets para esta aba.</p>`;
-            }
-
-            const isConferencia = sheetName === "CONFERENCIA";
-            const isStatusEditable = isConferencia;
-            
-            let tableID = '';
-            if (sheetName === 'CONFERENCIA') {
-                tableID = 'conferencia-table';
-            } else if (sheetName === 'NOTA FISCAL') {
-                tableID = 'notafiscal-table';
-            }
-
-            let html = `
-                <div class="rounded-lg border border-gray-200 overflow-x-auto shadow-sm">
-                    <table class="mock-table w-full text-sm" id="${tableID}">
-                        <thead class="bg-gray-50 sticky top-0">
-                            <tr>`;
-            
-            headers.forEach(h => {
-                html += `<th class="w-auto whitespace-nowrap">${h}</th>`;
-            });
-            html += `</tr></thead><tbody>`;
-
-            let dataRows = data;
-            
-            if (data.length > 0 && headers.length > 0 && String(data[0][0]) === headers[0]) {
-                dataRows = data.slice(1);
-            }
-
-            dataRows.forEach((row, rowIndex) => {
-    const isRowEmpty = row.length === 0 || row.every(cell => !cell || String(cell).trim() === '');
-    if (isRowEmpty) return; 
-
-    const sheetRowIndex = (data[0][0] === headers[0] ? rowIndex + 2 : rowIndex + 1);
+ * Renderiza os dados do Sheets em uma tabela HTML (usado para NF e Conferencia).
+ */
+function renderTable(sheetName, data, headers) {
     
-    // ✅ VERIFICA SE É UMA LINHA DE INFORMAÇÕES DA NOTA FISCAL
-    const isInfoRow = row.some(cell => 
-        cell && String(cell).includes('Data:') && 
-        String(cell).includes('Pedido:') && 
-        String(cell).includes('Chave:')
-    );
+    if (!data || data.length === 0) {
+        return `<p class="text-center text-gray-500 py-10">Nenhum dado encontrado no Google Sheets para esta aba.</p>`;
+    }
+
+    const isConferencia = sheetName === "CONFERENCIA";
+    const isStatusEditable = isConferencia;
     
-    const rowClass = isInfoRow ? 'bg-blue-200' : '';
+    let tableID = '';
+    if (sheetName === 'CONFERENCIA') {
+        tableID = 'conferencia-table';
+    } else if (sheetName === 'NOTA FISCAL') {
+        tableID = 'notafiscal-table';
+    }
+
+    let html = `
+        <div class="rounded-lg border border-gray-200 overflow-x-auto shadow-sm">
+            <table class="mock-table w-full text-sm" id="${tableID}">
+                <thead class="bg-gray-50 sticky top-0">
+                    <tr>`;
     
-    html += `<tr data-row-index="${sheetRowIndex}" class="${rowClass}">`;
-                
-                for (let i = 0; i < headers.length; i++) {
-                    const cellValue = row[i] !== undefined ? row[i] : '';
-                    
-                    const sheetCol = String.fromCharCode(65 + i);
-                    const sheetRange = `${sheetCol}${sheetRowIndex}`;
+    headers.forEach(h => {
+        html += `<th class="w-auto whitespace-nowrap">${h}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
 
-                    let editAttributes = '';
-                    let cellClasses = '';
+    let dataRows = data;
+    
+    if (data.length > 0 && headers.length > 0 && String(data[0][0]) === headers[0]) {
+        dataRows = data.slice(1);
+    }
 
-                    const isCellEditable = (isStatusEditable && i === 5);
+    dataRows.forEach((row, rowIndex) => {
+        const isRowEmpty = row.length === 0 || row.every(cell => !cell || String(cell).trim() === '');
+        if (isRowEmpty) return; 
 
-                    if (isCellEditable) {
-                        editAttributes = `contenteditable="true"
-                                         onblur="handleCellEdit(this, '${sheetRange}', '${sheetName}')"
-                                         data-original-value="${cellValue}"
-                                         data-sheet-range="${sheetRange}"`;
-                        
-                        cellClasses = 'cursor-text hover:bg-indigo-50/50 focus:bg-indigo-100 border border-transparent focus:border-indigo-400 transition';
-                    }
-                    
-                    let columnsToExpand = [];
-                    if (isConferencia) {
-                         columnsToExpand = [1, 2, 3, 4, 5, 6]; 
-                    } else if (sheetName === "NOTA FISCAL") {
-                         columnsToExpand = [1, 2, 3, 4]; 
-                    }
-                    
-                    if (columnsToExpand.includes(i + 1)) { 
-                         cellClasses += ' expand-mode-cell'; 
-                    }
-
-                    html += `<td ${editAttributes} class="${cellClasses}">${cellValue}</td>`;
-                }
-                html += `</tr>`;
-            });
-            
-            html += `</tbody></table></div>`;
-            return html;
+        const sheetRowIndex = (data[0][0] === headers[0] ? rowIndex + 2 : rowIndex + 1);
+        
+        // ✅ VERIFICA SE É UMA LINHA DE INFORMAÇÕES DA NOTA FISCAL
+        const isInfoRow = row.some(cell => 
+            cell && String(cell).includes('Data:') && 
+            String(cell).includes('Pedido:') && 
+            String(cell).includes('Chave:')
+        );
+        
+        const rowClass = isInfoRow ? 'bg-blue-200' : '';
+        
+        // ✅ APLICA AJUSTES DO CACHE SE EXISTIREM
+        const adjustments = loadConferenceAdjustments();
+        const adjustedRow = [...row]; // Cria uma cópia da linha
+        
+        // Aplica ajustes da coluna D (Contagem Loja)
+        if (adjustments[`D${sheetRowIndex}`] !== undefined) {
+            adjustedRow[3] = adjustments[`D${sheetRowIndex}`]; // Coluna D é índice 3
         }
+        
+        // Aplica ajustes da coluna E (Diferença)
+        if (adjustments[`E${sheetRowIndex}`] !== undefined) {
+            adjustedRow[4] = adjustments[`E${sheetRowIndex}`]; // Coluna E é índice 4
+        }
+        
+        html += `<tr data-row-index="${sheetRowIndex}" class="${rowClass}">`;
+                    
+        for (let i = 0; i < headers.length; i++) {
+            const cellValue = adjustedRow[i] !== undefined ? adjustedRow[i] : ''; // ✅ USA adjustedRow
+            
+            const sheetCol = String.fromCharCode(65 + i);
+            const sheetRange = `${sheetCol}${sheetRowIndex}`;
+
+            let editAttributes = '';
+            let cellClasses = '';
+
+            const isCellEditable = (isStatusEditable && i === 6); // Agora coluna 6 (Danos/Defeito)
+
+            if (isCellEditable) {
+                editAttributes = `contenteditable="true"
+                                 onblur="handleDanosDefeitoEdit(this, '${sheetRange}', '${sheetName}')"
+                                 data-original-value="${cellValue}"
+                                 data-sheet-range="${sheetRange}"`;
+                
+                cellClasses = 'cursor-text hover:bg-indigo-50/50 focus:bg-indigo-100 border border-transparent focus:border-indigo-400 transition';
+            }
+            
+            let columnsToExpand = [];
+            if (isConferencia) {
+                 columnsToExpand = [1, 2, 3, 4, 5, 6, 7]; // Agora 7 colunas
+            } else if (sheetName === "NOTA FISCAL") {
+                 columnsToExpand = [1, 2, 3, 4];
+            }
+            
+            if (columnsToExpand.includes(i + 1)) { 
+                 cellClasses += ' expand-mode-cell'; 
+            }
+
+            // ✅ ADICIONAR BOTÃO ✓ NA COLUNA "AJUSTAR" (índice 5)
+            if (isConferencia && i === 5) { // Coluna "Ajustar"
+                const diferencaValue = adjustedRow[4] !== undefined ? parseFloat(String(adjustedRow[4]).replace(',', '.')) : 0;
+                const quantidadeNF = adjustedRow[2] !== undefined ? parseFloat(String(adjustedRow[2]).replace(',', '.')) : 0;
+                
+                if (!isNaN(diferencaValue) && diferencaValue !== 0 && !isNaN(quantidadeNF)) {
+                   html += `<td class="text-center">
+            <button onclick="igualarContagem('${sheetRowIndex}', ${quantidadeNF})" 
+                    class="w-8 h-8 bg-transparent text-gray-600 rounded-lg hover:bg-gray-100 transition duration-150 text-sm font-medium border border-transparent hover:border-gray-300 flex items-center justify-center mx-auto">
+                ↺
+            </button>
+         </td>`;
+                } else {
+                    html += `<td></td>`;
+                }
+            } else {
+                html += `<td ${editAttributes} class="${cellClasses}">${cellValue}</td>`;
+            }
+        }
+        html += `</tr>`;
+    });
+    
+    html += `</tbody></table></div>`;
+    return html;
+}
 
 
         /**
@@ -1625,7 +1689,7 @@ function realizarMudancaParaConferencia(sheetName) {
         }
 
     } else if (sheetName === "CONFERENCIA") {
-        headers = ["Código de Barras", "Descrição do Produto", "Quantidade NF", "Contagem Loja", "Diferença", "Danos/Defeito"]; 
+        headers = ["Código de Barras", "Descrição do Produto", "Quantidade NF", "Contagem Loja", "Diferença", "Ajustar", "Danos/Defeito"]; 
         targetElementId = 'dynamic-table-content-conferencia';
         
         const targetElement = document.getElementById(targetElementId);
@@ -2330,45 +2394,50 @@ function applyExpandMode(table, columnsToTarget) {
         });
     });
 }
-      /**
- * ✅ APLICA FORMATAÇÃO CONDICIONAL NA ABA CONFERENCIA - VERSÃO ATUALIZADA
- * - Diferença negativa: Vermelho
- * - Diferença positiva: Verde  
- * - Danos/Defeito preenchido: Vermelho suave
+    /**
+ * ✅ APLICA FORMATAÇÃO CONDICIONAL NA ABA CONFERENCIA - VERSÃO CORRIGIDA
+ * - Diferença negativa: Vermelho apenas na coluna Diferença
+ * - Diferença positiva: Verde apenas na coluna Diferença  
+ * - Danos/Defeito preenchido: Vermelho suave apenas na coluna Danos/Defeito (texto preto)
  */
 function applyConferenciaStyles(numCols) {
     const rows = document.querySelectorAll('#conferencia-content .mock-table tbody tr');
 
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        if (cells.length < 6) return;
+        if (cells.length < 7) return;
 
         const diferencaCell = cells[4]; // 5ª coluna (Diferença)
-        const danosDefeitoCell = cells[5]; // 6ª coluna (Danos/Defeito)
+        const danosDefeitoCell = cells[6]; // 7ª coluna (Danos/Defeito)
         
         // ✅ REMOVER TODAS AS CLASSES DE COR ANTERIORES
-        row.classList.remove('bg-fee2e2', 'bg-green-100');
         diferencaCell.classList.remove('bg-fee2e2', 'text-b91c1c', 'bg-green-100', 'text-green-700');
-        danosDefeitoCell.classList.remove('bg-red-100');
+        danosDefeitoCell.classList.remove('bg-red-100', 'bg-fee2e2', 'text-b91c1c');
 
-        // ✅ 1. VERIFICAR DANOS/DEFEITO (PRIORIDADE MÁXIMA)
-        if (danosDefeitoCell && danosDefeitoCell.textContent.trim() !== '') {
-            danosDefeitoCell.classList.add('bg-red-100');
-        }
-
-        // ✅ 2. VERIFICAR DIFERENÇA (SE NÃO HOUVER DANOS/DEFEITO)
-        if (diferencaCell && danosDefeitoCell.textContent.trim() === '') {
+        // ✅ 1. VERIFICAR DIFERENÇA 
+        if (diferencaCell) {
             let value = parseFloat(diferencaCell.textContent.replace(',', '.').trim());
             
-            if (isNaN(value) || value === 0) {
-                // Nada a fazer - sem formatação
-            } else if (value < 0) {
-                // Diferença negativa - Vermelho
-                diferencaCell.classList.add('bg-fee2e2', 'text-b91c1c');
-            } else if (value > 0) {
-                // Diferença positiva - Verde
-                diferencaCell.classList.add('bg-green-100', 'text-green-700');
+            if (!isNaN(value)) {
+                if (value < 0) {
+                    // ✅ DIFERENÇA NEGATIVA: VERMELHO APENAS NA COLUNA DIFERENÇA
+                    diferencaCell.classList.add('bg-fee2e2', 'text-b91c1c');
+                } else if (value > 0) {
+                    // ✅ DIFERENÇA POSITIVA: VERDE APENAS NA COLUNA DIFERENÇA
+                    diferencaCell.classList.add('bg-green-100', 'text-green-700');
+                }
             }
+        }
+
+        // ✅ 2. VERIFICAR DANOS/DEFEITO PREENCHIDO - VERMELHO SUAVE COM TEXTO PRETO
+        if (danosDefeitoCell && danosDefeitoCell.textContent.trim() !== '') {
+            danosDefeitoCell.classList.add('bg-red-100');
+            // ✅ GARANTIR QUE O TEXTO FIQUE PRETO
+            danosDefeitoCell.classList.remove('text-b91c1c');
+            danosDefeitoCell.style.color = '#374151'; // Cor cinza escuro (texto normal)
+        } else {
+            // ✅ SE ESTIVER VAZIA, GARANTIR COR NORMAL
+            danosDefeitoCell.style.color = '';
         }
     });
 }
@@ -2406,108 +2475,112 @@ function applyConferenciaStyles(numCols) {
         }
 
         async function importXMLData(xmlContent) {
-            if (!xmlContent || xmlContent.trim().length < 100) {
-                showNotification("Conteúdo XML vazio ou inválido para importação.", 'warning');
-                return;
-            }
+    if (!xmlContent || xmlContent.trim().length < 100) {
+        showNotification("Conteúdo XML vazio ou inválido para importação.", 'warning');
+        return;
+    }
 
-            showNotification("Enviando XML para o backend...", 'loading');
+    showNotification("Enviando XML para o backend...", 'loading');
 
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/import-xml-data`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ xml_content: xmlContent, user_id: USER_ID })
-                });
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/import-xml-data`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ xml_content: xmlContent, user_id: USER_ID })
+        });
 
-                const result = await response.json();
-                hideNotification();
+        const result = await response.json();
+        hideNotification();
 
-                if (!response.ok || result.error) {
-                    showNotification(`Falha na Importação: ${result.error || 'Erro desconhecido do servidor.'}`, 'error');
-                } else {
-                    showNotification(result.message, 'success');
-                    switchTab("NOTA FISCAL");
-                }
-
-            } catch (error) {
-                hideNotification();
-                console.error("Erro de Rede:", error);
-                showNotification("Erro de Rede ao tentar conectar com o servidor.", 'error');
-            }
+        if (!response.ok || result.error) {
+            showNotification(`Falha na Importação: ${result.error || 'Erro desconhecido do servidor.'}`, 'error');
+        } else {
+            // ✅ LIMPAR CACHE DOS AJUSTES AO IMPORTAR NOVA NOTA
+            localStorage.removeItem(CONFERENCE_ADJUSTMENTS_KEY);
+            showNotification(result.message, 'success');
+            switchTab("NOTA FISCAL");
         }
+
+    } catch (error) {
+        hideNotification();
+        console.error("Erro de Rede:", error);
+        showNotification("Erro de Rede ao tentar conectar com o servidor.", 'error');
+    }
+}
 
         /**
          * ✅ FUNÇÃO CORRIGIDA: Importa XML por chave ignorando espaços E EXIBE INFORMAÇÕES
          */
         async function importarXMLPorChave() {
-            const chaveInput = document.getElementById("chave-acesso-input");
-            if (!chaveInput) {
-                showNotification("Campo de chave não encontrado.", "error");
-                return;
-            }
-            
-            let chaveAcesso = chaveInput.value.replace(/\s+/g, '');
-            
-            if (!chaveAcesso || chaveAcesso.length !== 44) {
-                showNotification(`Chave de acesso inválida. Deve conter 44 dígitos. (Atual: ${chaveAcesso.length} dígitos)`, "warning");
-                return;
-            }
+    const chaveInput = document.getElementById("chave-acesso-input");
+    if (!chaveInput) {
+        showNotification("Campo de chave não encontrado.", "error");
+        return;
+    }
+    
+    let chaveAcesso = chaveInput.value.replace(/\s+/g, '');
+    
+    if (!chaveAcesso || chaveAcesso.length !== 44) {
+        showNotification(`Chave de acesso inválida. Deve conter 44 dígitos. (Atual: ${chaveAcesso.length} dígitos)`, "warning");
+        return;
+    }
 
-            // ✅ VERIFICAÇÃO DE DUPLICIDADE - Busca na planilha atual
-            const currentData = await fetchSheetData("NOTA FISCAL");
-            const chaveExists = checkIfChaveExists(currentData, chaveAcesso);
-            
-            if (chaveExists) {
-                showNotification("Esta nota fiscal já foi importada anteriormente!", "error");
-                return;
-            }
+    // ✅ VERIFICAÇÃO DE DUPLICIDADE - Busca na planilha atual
+    const currentData = await fetchSheetData("NOTA FISCAL");
+    const chaveExists = checkIfChaveExists(currentData, chaveAcesso);
+    
+    if (chaveExists) {
+        showNotification("Esta nota fiscal já foi importada anteriormente!", "error");
+        return;
+    }
 
-            showNotification("Importando XML pela chave de acesso...", "loading");
+    showNotification("Importando XML pela chave de acesso...", "loading");
 
-            try {
-                const response = await fetch(`${BACKEND_URL}/api/importar-xml-chave`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    credentials: 'include',
-                    body: JSON.stringify({ chaveAcesso })
-                });
+    try {
+        const response = await fetch(`${BACKEND_URL}/api/importar-xml-chave`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: 'include',
+            body: JSON.stringify({ chaveAcesso })
+        });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${errorText}`);
-                }
-
-                const result = await response.json();
-                
-                if (result.error) {
-                    hideNotification();
-                    showNotification(`Erro: ${result.error}`, "error");
-                    return;
-                }
-
-                hideNotification();
-                showNotification(result.message, "success", 5000);
-
-                chaveInput.value = '';
-                hidePasteModal();
-                
-                setTimeout(() => {
-                    switchTab("NOTA FISCAL");
-                }, 1000);
-
-            } catch (error) {
-                hideNotification();
-                console.error("Erro ao importar XML por chave:", error);
-                
-                if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-                    showNotification("Erro de conexão com o servidor. Verifique sua internet.", "error");
-                } else {
-                    showNotification(`Erro: ${error.message}`, "error");
-                }
-            }
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
+
+        const result = await response.json();
+        
+        if (result.error) {
+            hideNotification();
+            showNotification(`Erro: ${result.error}`, "error");
+            return;
+        }
+
+        hideNotification();
+        // ✅ LIMPAR CACHE DOS AJUSTES AO IMPORTAR NOVA NOTA
+        localStorage.removeItem(CONFERENCE_ADJUSTMENTS_KEY);
+        showNotification(result.message, "success", 5000);
+
+        chaveInput.value = '';
+        hidePasteModal();
+        
+        setTimeout(() => {
+            switchTab("NOTA FISCAL");
+        }, 1000);
+
+    } catch (error) {
+        hideNotification();
+        console.error("Erro ao importar XML por chave:", error);
+        
+        if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+            showNotification("Erro de conexão com o servidor. Verifique sua internet.", "error");
+        } else {
+            showNotification(`Erro: ${error.message}`, "error");
+        }
+    }
+}
 
         /**
          * ✅ FUNÇÃO AUXILIAR: Verifica se a chave já existe nos dados atuais
@@ -2583,7 +2656,7 @@ function applyConferenciaStyles(numCols) {
             { name: "CONTADOR 3", range: 'A1:C3000' },
             { name: "CONTADOR 4", range: 'A1:C3000' },
             { name: "CONTADOR 5", range: 'A1:C3000' },
-            { name: "CONFERENCIA", range: 'F2:F' } 
+            { name: "CONFERENCIA", range: 'G2:G' } 
         ];
 
         function confirmClearAllSheets() {
@@ -2595,48 +2668,51 @@ function applyConferenciaStyles(numCols) {
         }
 
         async function clearMultipleSheets() {
-            showNotification(`Iniciando limpeza completa...`, 'loading', 30000);
+    showNotification(`Iniciando limpeza completa...`, 'loading', 30000);
 
-            let successCount = 0;
-            let errorCount = 0;
+    let successCount = 0;
+    let errorCount = 0;
 
-            for (const config of sheetsConfig) {
-                const result = await clearSheetData(config.name, config.range, false); 
-                if (result.success) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                    showNotification(`Erro ao limpar a aba '${config.name}' (Range: ${config.range}).`, 'error', 4000);
-                }
-            }
-
-            const contadores = ['CONTAGEM LOJA', 'CONTADOR 2', 'CONTADOR 3', 'CONTADOR 4', 'CONTADOR 5'];
-            contadores.forEach(contador => {
-                const cacheKey = `${CACHE_KEY}_${contador}`;
-                localStorage.removeItem(cacheKey);
-            });
-
-            pendingUpdates.clear();
-            editCount = 0;
-            updatePendingCount();
-
-            lastCacheCount = 0;
-
-            hideNotification();
-
-            if (errorCount === 0) {
-                showNotification(`Limpeza completa concluída! ${successCount} ações realizadas. Caches locais limpos.`, 'success', 5000);
-            } else {
-                 showNotification(`Limpeza concluída com ${errorCount} erro(s). Caches locais foram limpos.`, 'warning', 8000);
-            }
-
-            const activeTab = document.querySelector('.tab-button.border-indigo-600').dataset.tab;
-            if (activeTab === "CONTAGEM LOJA") {
-                switchContador(currentContador);
-            } else {
-                switchTab(activeTab);
-            }
+    for (const config of sheetsConfig) {
+        const result = await clearSheetData(config.name, config.range, false); 
+        if (result.success) {
+            successCount++;
+        } else {
+            errorCount++;
+            showNotification(`Erro ao limpar a aba '${config.name}' (Range: ${config.range}).`, 'error', 4000);
         }
+    }
+
+    const contadores = ['CONTAGEM LOJA', 'CONTADOR 2', 'CONTADOR 3', 'CONTADOR 4', 'CONTADOR 5'];
+    contadores.forEach(contador => {
+        const cacheKey = `${CACHE_KEY}_${contador}`;
+        localStorage.removeItem(cacheKey);
+    });
+
+    // ✅ ADICIONE ESTA LINHA PARA LIMPAR CACHE DOS AJUSTES
+    localStorage.removeItem(CONFERENCE_ADJUSTMENTS_KEY);
+
+    pendingUpdates.clear();
+    editCount = 0;
+    updatePendingCount();
+
+    lastCacheCount = 0;
+
+    hideNotification();
+
+    if (errorCount === 0) {
+        showNotification(`Limpeza completa concluída! ${successCount} ações realizadas. Caches locais limpos.`, 'success', 5000);
+    } else {
+         showNotification(`Limpeza concluída com ${errorCount} erro(s). Caches locais foram limpos.`, 'warning', 8000);
+    }
+
+    const activeTab = document.querySelector('.tab-button.border-indigo-600').dataset.tab;
+    if (activeTab === "CONTAGEM LOJA") {
+        switchContador(currentContador);
+    } else {
+        switchTab(activeTab);
+    }
+}
 
         async function clearSheetData(sheetName, range, showNotificationOnSuccess = true) {
             if (showNotificationOnSuccess) {
@@ -2929,6 +3005,105 @@ function applyConferenciaStyles(numCols) {
                 console.log("✅ Impressão Android configurada com sucesso!");
             }
         }
+
+        // --- FUNÇÕES PARA CACHE DE AJUSTES DA CONFERÊNCIA ---
+
+        /**
+         * ✅ CARREGAR AJUSTES DO CACHE LOCAL
+         */
+        function loadConferenceAdjustments() {
+            try {
+                const cached = localStorage.getItem(CONFERENCE_ADJUSTMENTS_KEY);
+                if (!cached) return {};
+                
+                const cacheData = JSON.parse(cached);
+                
+                // Cache válido por 24 horas
+                if (Date.now() - cacheData.timestamp > (24 * 60 * 60 * 1000)) {
+                    localStorage.removeItem(CONFERENCE_ADJUSTMENTS_KEY);
+                    return {};
+                }
+                
+                return cacheData.data || {};
+            } catch (error) {
+                console.error('Erro ao carregar cache de ajustes:', error);
+                return {};
+            }
+        }
+
+        /**
+         * ✅ SALVAR AJUSTES NO CACHE LOCAL
+         */
+        function saveConferenceAdjustments(data) {
+            try {
+                const cacheData = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(CONFERENCE_ADJUSTMENTS_KEY, JSON.stringify(cacheData));
+                conferenceAdjustments = data; // Atualiza a variável global
+            } catch (error) {
+                console.error('Erro ao salvar cache de ajustes:', error);
+            }
+        }
+
+        /**
+         * ✅ IGUALAR CONTAGEM - VERSÃO FRONTEND (SEM SOBRESCREVER FÓRMULAS)
+         */
+        async function igualarContagem(rowIndex, quantidadeNF) {
+            try {
+                showNotification(`Ajustando contagem localmente...`, 'loading');
+                
+                // ✅ SALVA NO CACHE LOCAL (não envia para o Sheets)
+                const adjustments = loadConferenceAdjustments();
+                
+                // Salva os ajustes para esta linha
+                adjustments[`D${rowIndex}`] = quantidadeNF.toString();
+                adjustments[`E${rowIndex}`] = "0";
+                
+                saveConferenceAdjustments(adjustments);
+                
+                // ✅ ATUALIZA APENAS A VISUALIZAÇÃO NO FRONTEND
+                updateFrontendDisplay(rowIndex, quantidadeNF, 0);
+                
+                hideNotification();
+                showNotification('Contagem ajustada localmente!', 'success', 3000);
+                
+            } catch (error) {
+                hideNotification();
+                console.error('Erro ao ajustar contagem:', error);
+                showNotification('Erro ao ajustar contagem: ' + error.message, 'error');
+            }
+        }
+
+        /**
+         * ✅ ATUALIZA A VISUALIZAÇÃO NO FRONTEND
+         */
+        function updateFrontendDisplay(rowIndex, contagemLoja, diferenca) {
+            const table = document.getElementById('conferencia-table');
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                if (row.getAttribute('data-row-index') === rowIndex.toString()) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 7) {
+                        // Atualiza coluna "Contagem Loja" (índice 3)
+                        if (cells[3]) {
+                            cells[3].textContent = contagemLoja;
+                        }
+                        
+                        // Atualiza coluna "Diferença" (índice 4)
+                        if (cells[4]) {
+                            cells[4].textContent = diferenca;
+                            // Reaplica os estilos
+                            applyConferenciaStyles(7);
+                        }
+                    }
+                }
+            });
+        }
+
 /**
  * ✅ EXPORTAR EXCEL CORRIGIDO - Inclui informações das notas e exporta apenas o visível
  */
@@ -2954,9 +3129,8 @@ function exportarCSVNoNavegador() {
         }
         
         let csv = [];
-        
-        // ✅ ADICIONA BOM (Byte Order Mark) para UTF-8
         const BOM = "\uFEFF";
+        const adjustments = loadConferenceAdjustments();
         
         // ✅ 1. INCLUIR INFORMAÇÕES DAS NOTAS FISCAIS
         const notasInfoElements = document.querySelectorAll('#dynamic-table-content-conferencia .mb-4 > div');
@@ -2983,7 +3157,7 @@ function exportarCSVNoNavegador() {
             });
         csv.push(cabecalhos.join(';'));
         
-        // ✅ 3. DADOS DA TABELA - APENAS LINHAS VISÍVEIS
+        // ✅ 3. DADOS DA TABELA - APENAS LINHAS VISÍVEIS E COM AJUSTES APLICADOS
         const linhas = tabela.querySelectorAll('tbody tr');
         let linhasExportadas = 0;
         
@@ -2994,24 +3168,34 @@ function exportarCSVNoNavegador() {
                 return; // Pula linhas ocultas
             }
             
-            const celulas = Array.from(linha.querySelectorAll('td'))
-                .map((td, index) => {
-                    let texto = td.textContent.trim();
-                    
-                    // ✅ CORREÇÃO: Para a primeira coluna (Código de Barras), formata como texto
-                    if (index === 0 && texto) {
-                        // Força o Excel a tratar como texto adicionando tab no início
-                        texto = "\t" + texto;
-                    }
-                    
-                    texto = texto.replace(/"/g, '""');
-                    texto = texto.replace(/\n/g, ' ');
-                    texto = texto.replace(/\r/g, ' ');
-                    return `"${texto}"`;
-                });
+            const rowIndex = linha.getAttribute('data-row-index');
+            const celulas = Array.from(linha.querySelectorAll('td'));
             
-            if (celulas.length > 0 && celulas.some(cell => cell !== '""')) {
-                csv.push(celulas.join(';'));
+            const celulasExport = celulas.map((td, index) => {
+                let texto = td.textContent.trim();
+                
+                // ✅ APLICA AJUSTES DO CACHE PARA EXPORTAÇÃO
+                if (rowIndex && adjustments) {
+                    if (index === 3 && adjustments[`D${rowIndex}`] !== undefined) {
+                        texto = adjustments[`D${rowIndex}`];
+                    } else if (index === 4 && adjustments[`E${rowIndex}`] !== undefined) {
+                        texto = adjustments[`E${rowIndex}`];
+                    }
+                }
+                
+                // Formatação para Excel
+                if (index === 0 && texto) {
+                    texto = "\t" + texto;
+                }
+                
+                texto = texto.replace(/"/g, '""');
+                texto = texto.replace(/\n/g, ' ');
+                texto = texto.replace(/\r/g, ' ');
+                return `"${texto}"`;
+            });
+            
+            if (celulasExport.length > 0 && celulasExport.some(cell => cell !== '""')) {
+                csv.push(celulasExport.join(';'));
                 linhasExportadas++;
             }
         });
@@ -3310,7 +3494,7 @@ function filtrarDivergencias() {
 
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
-        if (cells.length >= 6) {
+        if (cells.length >= 7) {
             totalRows++;
             
             const diferencaCell = cells[4]; // 5ª coluna (Diferença)
@@ -3328,9 +3512,10 @@ function filtrarDivergencias() {
             }
             
             // Verifica se tem OBS preenchida
-            if (obsCell && obsCell.textContent.trim() !== '') {
-                isDivergencia = true;
-            }
+           const danosDefeitoCell = cells[6]; // 7ª coluna
+if (danosDefeitoCell && danosDefeitoCell.textContent.trim() !== '') {
+    isDivergencia = true;
+}
             
             if (isFilterActive) {
                 // Modo "Mostrar todas" - mostra todas as linhas
@@ -3384,10 +3569,254 @@ function filtrarDivergencias() {
  * Abre o link do sistema Microvix em nova aba
  */
 function abrirIntegracaoNota() {
-    const url = 'https://erp.microvix.com.br';
+    const url = 'https://linx.microvix.com.br/v4/home/index.asp';
     window.open(url, '_blank');
     showNotification('Abrindo sistema de integração...', 'info', 2000);
 }
+
+		/**
+ * ✅ CARREGAR AJUSTES DO CACHE LOCAL
+ */
+function loadConferenceAdjustments() {
+    try {
+        const cached = localStorage.getItem(CONFERENCE_ADJUSTMENTS_KEY);
+        if (!cached) return {};
+        
+        const cacheData = JSON.parse(cached);
+        
+        // ✅ MUDAR PARA 1 HORA (ou menos) EM VEZ DE 24 HORAS
+        if (Date.now() - cacheData.timestamp > (1 * 60 * 60 * 1000)) {
+            localStorage.removeItem(CONFERENCE_ADJUSTMENTS_KEY);
+            return {};
+        }
+        
+        return cacheData.data || {};
+    } catch (error) {
+        console.error('Erro ao carregar cache de ajustes:', error);
+        return {};
+    }
+}
+
+		/**
+ * ✅ MANIPULA EDIÇÃO NA COLUNA DANOS/DEFEITO E MANTÉM FORMATAÇÃO
+ */
+function handleDanosDefeitoEdit(element, sheetRange, sheetName) {
+    // Primeiro executa a edição normal
+    handleCellEdit(element, sheetRange, sheetName);
+    
+    // ✅ DEPOIS REAPLICA OS ESTILOS PARA MANTER AS CORES
+    setTimeout(() => {
+        applyConferenciaStyles(7);
+    }, 100);
+}
+
+
+	/**
+ * ✅ GERAR PDF DA CONFERÊNCIA PARA EMAIL
+ */
+function gerarPDFParaEmail() {
+    // Verifica se está na aba CONFERENCIA
+    const abaAtual = document.querySelector('.tab-button.border-indigo-600')?.dataset.tab;
+    
+    if (abaAtual !== 'CONFERENCIA') {
+        // Se não estiver na conferência, muda para ela primeiro
+        switchTab('CONFERENCIA');
+        showNotification('Carregando conferência para gerar PDF...', 'loading', 2000);
+        
+        // Espera carregar a conferência antes de gerar o PDF
+        setTimeout(() => {
+            window.print();
+        }, 2500);
+    } else {
+        // Já está na conferência, gera o PDF imediatamente
+        window.print();
+    }
+}
+
+/**
+ * ✅ ABRIR OPÇÕES DE EMAIL
+ */
+function abrirOpcoesEmail() {
+    // Primeiro gera o PDF DA CONFERÊNCIA
+    gerarPDFParaEmail();
+    
+    // Mostra modal com opções
+    const modalHtml = `
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                <h3 class="text-lg font-bold mb-4">Enviar Conferência por Email</h3>
+                <p class="text-sm text-gray-600 mb-4">
+                    <strong>Instruções:</strong><br>
+                    1. Salve o PDF da conferência<br>
+                    2. Clique no seu provedor de email preferido<br>
+                    3. Anexe o PDF manualmente no email
+                </p>
+                <div class="space-y-3">
+                    <button onclick="abrirGmail()" class="w-full flex items-center space-x-3 px-4 py-3 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition duration-150 text-sm font-medium border border-red-200">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#4285F4" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#34A853" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        <span>Abrir Gmail</span>
+                    </button>
+                    
+                    <button onclick="abrirOutlook()" class="w-full flex items-center space-x-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition duration-150 text-sm font-medium border border-blue-200">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+    <span>Abrir Outlook</span>
+</button>
+                    
+                    <button onclick="fecharModalEmail()" class="w-full px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const modal = document.createElement('div');
+    modal.id = 'email-modal';
+    modal.innerHTML = modalHtml;
+    document.body.appendChild(modal);
+}
+
+/**
+ * ✅ PREPARAR EMAIL COM PDF
+ */
+function prepararEmailComPDF(provedor = 'gmail') {
+    showNotification('Gerando PDF da conferência...', 'loading', 2000);
+    
+    // Fecha o modal primeiro
+    fecharModalEmail();
+    
+    // Pequeno delay para fechar o modal antes de abrir o PDF
+    setTimeout(() => {
+        // Gera o PDF
+        window.print();
+        
+        // Abre o email após um tempo (para dar tempo de salvar o PDF)
+        setTimeout(() => {
+            if (provedor === 'outlook') {
+                abrirOutlook();
+            } else {
+                abrirGmail();
+            }
+        }, 2000);
+        
+    }, 500);
+}
+
+/**
+ * ✅ FECHAR MODAL EMAIL
+ */
+function fecharModalEmail() {
+    const modal = document.getElementById('email-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+ 
+
+/**
+ * ✅ EXTRAIR NOME DA LOJA DA URL
+ */
+function extrairNomeDaLoja() {
+    const hostname = window.location.hostname;
+    
+    // Remove o .gtgo.com.br e pega a parte antes
+    const partes = hostname.split('.');
+    if (partes.length > 0) {
+        let nomeLoja = partes[0];
+        
+        // Adiciona hífen entre letras e números
+        nomeLoja = nomeLoja.replace(/([a-zA-Z])(\d)/, '$1-$2');
+        
+        // Remove tudo depois dos números
+        nomeLoja = nomeLoja.replace(/(-\d+).*$/, '$1');
+        
+        return nomeLoja;
+    }
+    
+    return 'Loja';
+}
+
+/**
+ * ✅ EXTRAIR NÚMEROS DAS NOTAS FISCAIS
+ */
+function extrairNumerosNotasFiscais() {
+    const notas = [];
+    
+    // Procura pelas informações das notas fiscais acima da tabela
+    const elementosNotas = document.querySelectorAll('#dynamic-table-content-conferencia .mb-4 > div');
+    
+    elementosNotas.forEach(elemento => {
+        const texto = elemento.textContent;
+        
+        // Procura por "Nfe:" seguido de números
+        const matchNfe = texto.match(/Nfe:\s*(\d+)/i);
+        if (matchNfe) {
+            notas.push(matchNfe[1]);
+        }
+        
+        // Também procura por "NF:" (formato antigo)
+        const matchNF = texto.match(/NF:\s*(\d+)/i);
+        if (matchNF && !notas.includes(matchNF[1])) {
+            notas.push(matchNF[1]);
+        }
+    });
+    
+    return notas;
+}
+
+/**
+ * ✅ FORMATAR LISTA DE NOTAS FISCAIS
+ */
+function formatarNotasFiscais(notas) {
+    if (notas.length === 0) return 'NFe(s) não identificada(s)';
+    if (notas.length === 1) return `Nfe: ${notas[0]}`;
+    
+    return `Nfe: ${notas.join(', ')}`;
+}
+
+
+	/**
+ * ✅ ABRIR GMAIL
+ */
+function abrirGmail() {
+    const nomeLoja = extrairNomeDaLoja();
+    const notas = extrairNumerosNotasFiscais();
+    const notasFormatadas = formatarNotasFiscais(notas);
+    
+    const assunto = `Divergência na NFe da (${nomeLoja}) - ${new Date().toLocaleDateString('pt-BR')}`;
+    const corpo = `Prezado(a),\n\nSegue em anexo a divergência encontrada na nota fiscal ${notasFormatadas} da (${nomeLoja}).\n\nAtenciosamente\n`;
+    
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&to=&su=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+    window.open(url, '_blank');
+    fecharModalEmail();
+}
+
+
+/**
+ * ✅ ABRIR OUTLOOK
+ */
+function abrirOutlook() {
+    const nomeLoja = extrairNomeDaLoja();
+    const notas = extrairNumerosNotasFiscais();
+    const notasFormatadas = formatarNotasFiscais(notas);
+    
+    const assunto = `Divergência na NFe da (${nomeLoja}) - ${new Date().toLocaleDateString('pt-BR')}`;
+    const corpo = `Prezado(a),%0D%0A%0D%0ASegue em anexo a divergência encontrada na nota fiscal ${notasFormatadas} da (${nomeLoja}).%0D%0A%0D%0AAtenciosamente,%0D%0A`;
+    
+    const url = `https://outlook.live.com/mail/0/deeplink/compose?to=&subject=${encodeURIComponent(assunto)}&body=${corpo}`;
+    window.open(url, '_blank');
+    fecharModalEmail();
+}
+
+
 		
     </script>
 </body>
