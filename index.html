@@ -1178,7 +1178,7 @@ body {
 
         // --- Sistema de Cache para Contagem Loja ---
         const CACHE_KEY = 'contagem_loja_cache';
-        const CACHE_DURATION = 3 * 60 * 60 * 1000; // 3 horas em milissegundos
+        const CACHE_DURATION = 72 * 60 * 60 * 1000; // 3 horas em milissegundos mudei para 72 horas
         const BATCH_SIZE = 50; // Atualizar a cada 50 células
         let pendingUpdates = new Map(); // Armazena as atualizações pendentes
         let editCount = 0; // Contador de edições
